@@ -118,14 +118,15 @@ a survey with 30 objects — a thin basis, and we say so in `docs/LIMITATIONS.md
 
 **14. How do you handle rocks and sand ripples?**
 *20s:* Ten physical features per candidate — shadow coherence, contrast, highlight
-compactness, texture roughness relative to background, and so on — fed to a
-logistic model fitted on held-out data.
-*Deep:* And here's the interesting part: the fit **contradicted our own prior**.
-We expected `shadow_ratio` to indicate a real object; it got a large *negative*
-weight, because the strongest dark strips next to a candidate are usually the
-nadir band, not an object shadow. A hand-written "require a shadow" rule — which
-is what the textbooks suggest — would have *hurt* precision. That's why the brief
-says don't hand-code rules without testing them, and why we fitted instead.
+compactness, texture roughness relative to background — fed to a logistic model
+fitted on held-out data, with per-detection attribution for every decision.
+*Deep:* And the weights earned their keep in an unexpected way. An early fit gave
+`shadow_ratio` a large *negative* weight, contradicting the physics. That turned
+out to be a **symptom of a bug in our own pipeline** — we were preprocessing at
+inference with a chain the detector had never been trained on. Fixing it gave a
+12× F1 improvement and turned both shadow features positive. The point is that an
+inspectable filter is a diagnostic instrument; a hand-tuned threshold would have
+absorbed that defect silently.
 
 **15. How do you handle acoustic shadows?**
 *20s:* We measure them on both sides of a candidate and, when the nadir column is
@@ -138,8 +139,15 @@ nadir band is *split* by a bright first-bottom-return spike, so the obvious
 "darkest contiguous run" algorithm finds only half of it.
 *Deep:* Our first implementation silently missed it on every real frame. The fix
 bridges the bright gap; negative controls (uniform image, pure noise) are unit
-tested so it can't over-trigger. `docs/DATA_PIPELINE.md` shows the measured
-profile.
+tested so it can't over-trigger. `docs/DATA_PIPELINE.md` shows the measured profile.
+
+**16b. Do you actually apply that preprocessing?**
+*20s:* Only if the detector was **trained** on it. That is the single biggest
+lesson from this project — applying our standard chain at inference to a
+raw-trained model cost a **12× F1 drop** (0.144 → 0.012) and more than doubled
+false-alarm frames. The profile is now a property of the checkpoint, stored in a
+sidecar and selected automatically, with a test that stops the bad default coming
+back.
 
 **17. Why IoU 0.3 instead of the standard 0.5?**
 *20s:* At ~24 px, a 3–4 pixel annotation offset — well within inter-annotator

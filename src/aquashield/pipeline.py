@@ -41,7 +41,17 @@ from .tracking.dedup import Observation, deduplicate
 
 @dataclass
 class PipelineConfig:
-    preprocess_profile: str = "standard"
+    # DEFAULT IS "none", AND THAT IS DELIBERATE.
+    #
+    # Preprocessing must match what the detector was TRAINED on. Applying a
+    # preprocessing chain at inference to a model trained on raw frames shifts the
+    # input distribution and destroys performance -- measured on the held-out test
+    # surveys, F1 fell from 0.144 (raw) to 0.012 (standard profile), a 12x
+    # degradation, while false-alarm frames rose from 80 to 186 of 473.
+    #
+    # Use `preprocess_profile_for_model()` to pick the profile a checkpoint was
+    # actually trained with, rather than assuming one here.
+    preprocess_profile: str = "none"
     preprocess_config: PreprocessConfig | None = None
     tile_size: int = 640
     tile_overlap: int = 128

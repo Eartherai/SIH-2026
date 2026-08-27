@@ -32,6 +32,7 @@ from aquashield import __version__                                     # noqa: E
 from aquashield.confidence.calibration import PlattCalibrator          # noqa: E402
 from aquashield.confidence.fp_filter import LearnedFPFilter            # noqa: E402
 from aquashield.detection.detector import Detector                     # noqa: E402
+from aquashield.detection.model_meta import read_meta                  # noqa: E402
 from aquashield.detection.taxonomy import Taxonomy                     # noqa: E402
 from aquashield.device import select_device                            # noqa: E402
 from aquashield.geolocation import (NavigationReference, NoGeoReference,  # noqa: E402
@@ -150,8 +151,24 @@ else:
         nav_file = tmp
 
 st.sidebar.header("3 · Preprocessing")
-profile_name = st.sidebar.selectbox("Profile", list(PROFILES.keys()),
-                                    index=list(PROFILES).index("standard"))
+# The correct profile is a property of the CHECKPOINT, not a free choice.
+# Applying a chain the detector was never trained on degrades it severely
+# (measured: F1 0.144 -> 0.012). We default to whatever this model was trained on.
+_meta = read_meta(str(model_choice))
+_trained_profile = _meta.get("preprocess_profile", "none")
+if _meta.get("_assumed"):
+    st.sidebar.caption(f"No metadata for this checkpoint — assuming it was trained "
+                       f"on **{_trained_profile}** (raw) imagery.")
+else:
+    st.sidebar.caption(f"This checkpoint was trained on the **{_trained_profile}** profile.")
+profile_name = st.sidebar.selectbox(
+    "Profile", list(PROFILES.keys()),
+    index=list(PROFILES).index(_trained_profile if _trained_profile in PROFILES else "none"),
+    help="Match this to the profile the detector was trained on. Mismatching it "
+         "shifts the input distribution and degrades detection sharply.")
+if profile_name != _trained_profile:
+    st.sidebar.warning(f"Profile '{profile_name}' does not match this checkpoint's "
+                       f"training profile '{_trained_profile}'. Expect degraded detection.")
 base = PROFILES[profile_name]
 with st.sidebar.expander("Fine-tune stages"):
     pp = PreprocessConfig(

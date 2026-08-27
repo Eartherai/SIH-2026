@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from aquashield.detection.model_meta import write_meta  # noqa: E402
 from aquashield.device import select_device  # noqa: E402
 
 REGISTRY = Path("experiments/registry.jsonl")
@@ -140,6 +141,19 @@ def main() -> None:
         "run_dir": str(save_dir),
         "notes": args.notes,
     }
+    # Record which preprocessing the detector actually saw, next to the weights,
+    # so inference can never silently mismatch it.
+    pp_profile = "none"
+    pp_cfg_file = Path(args.data).parent / "preprocess_config.json"
+    if pp_cfg_file.exists():
+        pp_profile = json.loads(pp_cfg_file.read_text()).get("profile", "standard")
+        row["trained_on_preprocessed"] = json.loads(pp_cfg_file.read_text())
+    for w in (save_dir / "weights" / "best.pt", save_dir / "weights" / "last.pt"):
+        if w.exists():
+            write_meta(w, preprocess_profile=pp_profile, experiment_id=args.exp_id,
+                       data=args.data, imgsz=args.imgsz)
+    row["preprocess_profile"] = pp_profile
+
     REGISTRY.parent.mkdir(parents=True, exist_ok=True)
     with REGISTRY.open("a") as f:
         f.write(json.dumps(row) + "\n")

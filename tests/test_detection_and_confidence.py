@@ -170,3 +170,41 @@ class TestCalibration:
                              [(95, "CRITICAL"), (70, "HIGH"), (50, "MEDIUM"), (10, "LOW")])
     def test_bands(self, pct, expected):
         assert band(pct) == expected
+
+
+class TestModelMeta:
+    """The preprocessing profile is a property of the CHECKPOINT.
+
+    Applying a chain the detector was never trained on shifted F1 from 0.144 to
+    0.012 on the held-out surveys. These tests keep that failure from returning
+    silently.
+    """
+
+    def test_missing_sidecar_assumes_raw_and_says_so(self, tmp_path):
+        from aquashield.detection.model_meta import read_meta
+        m = read_meta(tmp_path / "nope.pt")
+        assert m["preprocess_profile"] == "none"
+        assert m["_assumed"] is True
+        assert "mismatch" in m["_note"]
+
+    def test_roundtrip(self, tmp_path):
+        from aquashield.detection.model_meta import (preprocess_profile_for_model,
+                                                     read_meta, write_meta)
+        w = tmp_path / "m.pt"
+        w.write_bytes(b"x")
+        write_meta(w, preprocess_profile="standard", experiment_id="E99")
+        assert preprocess_profile_for_model(w) == "standard"
+        assert read_meta(w).get("_assumed") is None
+        assert read_meta(w)["experiment_id"] == "E99"
+
+    def test_corrupt_sidecar_falls_back_safely(self, tmp_path):
+        from aquashield.detection.model_meta import read_meta
+        w = tmp_path / "m.pt"
+        w.write_bytes(b"x")
+        (tmp_path / "m.meta.json").write_text("{not json")
+        assert read_meta(w)["preprocess_profile"] == "none"
+
+    def test_pipeline_default_profile_is_none(self):
+        """Guards against someone 'helpfully' restoring a preprocessing default."""
+        from aquashield.pipeline import PipelineConfig
+        assert PipelineConfig().preprocess_profile == "none"

@@ -17,7 +17,7 @@ Assessed honestly against the above:
 |---|---|
 | "AI detects marine debris in sonar" | **Not novel.** GhostVision, and a large literature, already do this. |
 | "Detection + georeferencing + mapping" | **Not novel.** GhostVision + PINGMapper already deliver this combination. |
-| Learned FP filter over *physically-motivated* features, with per-detection attribution | **Defensible contribution.** Prior systems tune thresholds; we fit and inspect weights, and the fit contradicted our own prior (see `docs/ML_PIPELINE.md`). |
+| Learned FP filter over *physically-motivated* features, with per-detection attribution | **Defensible contribution.** Prior systems tune thresholds; we fit and inspect weights — and the weights localised a train/inference preprocessing defect in our own pipeline that aggregate metrics had not (see `docs/ML_PIPELINE.md`). |
 | Explicit confidence **calibration** separated from raw detector score, with reliability measured | **Defensible contribution.** Rare in this application area. |
 | Refusing to emit a coordinate without metadata, and reporting a per-fix **uncertainty budget** | **Defensible contribution**, and mostly an engineering-honesty choice rather than a research one. |
 | Confidence vs **priority** as separate quantities | **Product contribution**, not research novelty. |

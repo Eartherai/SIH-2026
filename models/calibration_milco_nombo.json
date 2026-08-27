@@ -1,11 +1,11 @@
 {
   "kind": "platt",
   "fitted": true,
-  "a": 0.5417582055070422,
-  "b": -1.0915087532764096,
-  "n": 71,
-  "positives": 7,
-  "ece_before": 0.086,
-  "ece_after": 0.0184,
+  "a": 1.4160257927937607,
+  "b": 1.2775609378842647,
+  "n": 186,
+  "positives": 19,
+  "ece_before": 0.033,
+  "ece_after": 0.0311,
   "fit_split": "val"
 }

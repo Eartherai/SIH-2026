@@ -86,14 +86,22 @@ target/background contrast, highlight compactness, texture roughness relative to
 the surrounding seabed — that are *independent of the detector's own opinion*, then
 fits a logistic model on a **held-out survey**.
 
-We did not hand-write threshold rules, and that turned out to matter:
+We did not hand-write threshold rules, and that turned out to matter — though not
+in the way we first thought:
 
-> **The fit contradicted our own physical prior.** We expected `shadow_ratio` to
-> indicate a *real* object — a proud target casts an acoustic shadow, which is the
-> first thing any sonar textbook tells you. It received a large **negative**
-> weight, because the strongest dark strips beside a candidate are usually the
-> **nadir band**, not an object shadow. A hand-coded "require a shadow" rule would
-> have *degraded* precision on this data.
+> **The filter's weights exposed a bug in our own pipeline.** In an early fit,
+> `shadow_ratio` received a large *negative* weight — the opposite of what sonar
+> physics predicts, since a proud object casts a shadow. That looked like a
+> surprising scientific result. It was not. It was a symptom: we were applying a
+> preprocessing chain at inference that the detector had never been trained on,
+> and the mismatch was corrupting exactly that feature. After fixing the
+> mismatch, `shadow_ratio` came out **+0.15** and `shadow_side_consistent`
+> **+0.32** — both positive, and consistent with the physics.
+
+The lesson we actually take from this is that **a learned, inspectable
+verification stage is a diagnostic instrument**, not just a classifier. Its
+weights flagged a data-handling defect that our metrics alone had not localised.
+A hand-tuned threshold would have silently absorbed the same defect.
 
 Every verdict is explainable: each detection reports the top feature
 contributions that drove its accept/reject decision.
@@ -150,6 +158,22 @@ and `experiments/` for the raw records.
 
 Detection accuracy is reported on **held-out surveys** in `docs/BENCHMARKS.md`.
 It is modest, and the reasons are stated. It is not inflated by a random split.
+
+### A defect we found by measuring, and fixed
+
+Preprocessing must match what the detector was **trained** on. Applying our
+`standard` profile at inference to a raw-trained model, measured on the 612
+held-out test frames:
+
+| Inference input | F1 | True positives | False-alarm frames (of 473) |
+|---|---|---|---|
+| raw (matched) | **0.1440** | 28 | 80 |
+| `standard` profile (mismatched) | 0.0117 | 4 | 186 |
+
+A **12× F1 degradation**. The preprocessing profile is therefore now a property
+of the *checkpoint*, recorded in a `.meta.json` sidecar and selected
+automatically; the dashboard warns if you override it. A test asserts the
+pipeline default stays `none`.
 
 ---
 

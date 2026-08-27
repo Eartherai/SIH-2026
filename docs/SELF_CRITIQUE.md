@@ -13,13 +13,18 @@ measured from pixels, fitted on a held-out survey, with per-detection attributio
 — is a real engineering contribution, and it directly addresses the part of
 PS 26057 that most teams will gloss over.
 
-**2. The finding that contradicted us.** `shadow_ratio` getting a negative weight
-is the single most interesting thing in this project. It is a concrete
-demonstration that the "obvious" textbook heuristic — *a real object casts a
-shadow* — would have *hurt* precision on this data, because the darkest strips
-beside a candidate are usually the nadir band. That is a genuine result, it is
-reproducible, and it is the strongest evidence that we followed the brief's "do
-not hand-code untested rules" instruction rather than paying it lip service.
+**2. The verification stage caught a bug we had not found any other way.** An
+early fit gave `shadow_ratio` a large negative weight, contradicting sonar
+physics. We nearly wrote that up as a scientific finding. It was actually a
+symptom of a train/inference preprocessing mismatch in our own pipeline that was
+costing a **12× F1 degradation** (0.144 → 0.012) and more than doubling
+false-alarm frames. Fixing it turned both shadow features positive.
+
+Two things worth noting about this honestly. First, it is a genuine argument for
+*inspectable* models over tuned thresholds — the weights localised the defect.
+Second, **we should have caught it sooner**: the symptom was visible in the very
+first ablation, where "preprocessing" appeared to destroy precision, and we
+initially recorded that as a result rather than immediately suspecting ourselves.
 
 **3. Refusal behaviour, enforced by tests.** Returning `null` coordinates,
 `calibrated: false`, and "dimensions unavailable" — and having tests that *fail*

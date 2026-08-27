@@ -84,7 +84,13 @@ def main() -> None:
     ap.add_argument("--data-root", default="data/processed/milco_nombo_yolo")
     ap.add_argument("--split", default="val")
     ap.add_argument("--profile", default="standard")
-    ap.add_argument("--conf", type=float, default=0.05, help="low: we need FPs to learn from")
+    ap.add_argument("--conf", type=float, default=0.02,
+                    help="deliberately very low -- the filter can only learn from "
+                         "candidates the detector actually emits")
+    ap.add_argument("--min-recall", type=float, default=0.80,
+                    help="recall floor for threshold selection. Without it, a thin "
+                         "fit split has a degenerate optimum: reject everything, "
+                         "score perfect precision, and detect nothing.")
     ap.add_argument("--iou-thr", type=float, default=0.3)
     ap.add_argument("--tile", type=int, default=640)
     ap.add_argument("--overlap", type=int, default=128)
@@ -109,12 +115,28 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
 
     # ---- FP filter ----
-    filt = LearnedFPFilter().fit(X, y)
+    # Regularise harder when the fit split is small: 11 inputs fitted on a few
+    # dozen candidates will otherwise memorise this survey and reject everything
+    # it has not seen. Scale L2 with the inverse sample count.
+    l2 = 1e-3 if len(y) >= 400 else (1e-2 if len(y) >= 150 else 5e-2)
+    filt = LearnedFPFilter().fit(X, y, l2=l2)
     p = filt.proba(X)
-    best = max(((t, *_prf(p >= t, y)) for t in np.linspace(0.05, 0.95, 91)),
-               key=lambda z: z[3])
+
+    cands = [(t, *_prf(p >= t, y)) for t in np.linspace(0.05, 0.95, 91)]
+    # Only consider thresholds that retain enough true targets. Maximising F1
+    # alone on a thin split happily picks "accept almost nothing".
+    viable = [c for c in cands if c[2] >= args.min_recall]
+    if viable:
+        best = max(viable, key=lambda z: z[3])
+    else:
+        best = max(cands, key=lambda z: z[2])       # fall back to best recall
+        print(f"WARNING: no threshold reaches recall >= {args.min_recall}; "
+              f"selected the highest-recall threshold instead.")
     filt.threshold = float(best[0])
     filt.meta["selected_threshold_f1"] = round(float(best[3]), 4)
+    filt.meta["selected_threshold_recall"] = round(float(best[2]), 4)
+    filt.meta["min_recall_constraint"] = args.min_recall
+    filt.meta["l2"] = l2
     filt.meta["fit_split"] = args.split
     filt.meta["iou_threshold"] = args.iou_thr
     filt.save(out / f"fp_filter_{args.tag}.json")

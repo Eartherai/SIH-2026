@@ -53,27 +53,44 @@ Two are worth explaining:
 - **`texture_homogeneity`** is computed *relative to the surrounding background*,
   not against an absolute threshold, because sonar gain varies per survey.
 
-### The learned filter — and a finding that contradicted us
+### The learned filter — and what its weights caught
 
 The brief says: *"Do not create arbitrary heuristic rules without testing them."*
 So we did not. `confidence/fp_filter.py` fits an L2-regularised logistic model
 over the ten features plus the raw detector score, **on the held-out validation
 survey**, with class weighting because false positives vastly outnumber true ones.
+Regularisation is scaled to the sample count, and threshold selection is
+constrained by a recall floor — without it, a thin fit split has a degenerate
+optimum: reject everything, score perfect precision, detect nothing.
 
-Fitting it produced a result that **contradicted our own physical prior**:
+**The weights caught a defect in our own pipeline.** An early fit gave
+`shadow_ratio` a large *negative* weight. That is the opposite of what sonar
+physics predicts — an object standing proud of the seabed casts a shadow, and
+that shadow is the classic evidence of a real target.
 
-> `shadow_ratio` received a large **negative** weight.
+We initially read this as a surprising empirical result. It was not. It was a
+**symptom**: at that point we were applying the `standard` preprocessing profile
+at inference to a detector trained on raw frames, and the resulting distribution
+shift was corrupting the very region the shadow features measure. Once the
+mismatch was fixed, the same fitting procedure produced:
 
-We expected shadow evidence to indicate a *real* object. In this dataset it does
-the opposite — because the strongest dark strips adjacent to a candidate are
-usually the **nadir band**, not an object shadow. The model learned that "dark
-strip next to the box" is more often the water column than a target.
+| Feature | Weight (matched) |
+|---|---|
+| `local_snr` | **+1.10** |
+| `raw_score` | +1.07 |
+| `size_rank` | +0.89 |
+| `target_contrast` | −0.82 |
+| `edge_straightness` | −0.61 |
+| `highlight_compactness` | +0.44 |
+| `shadow_side_consistent` | **+0.32** |
+| `shadow_ratio` | **+0.15** |
 
-This is exactly why the filter is fitted rather than hand-tuned. A hand-written
-rule of the form *"require a shadow to accept a detection"* — which is what sonar
-textbooks suggest and what we would have written — would have **degraded**
-precision on this data. The rule-based fallback (`RuleBasedFilter`) contains that
-rule and is explicitly labelled a heuristic, not a validated constant.
+Both shadow features are now positive, consistent with the physics.
+
+**The real lesson** is not about shadows. It is that an *inspectable* verification
+stage doubles as a diagnostic instrument: its weights localised a data-handling
+defect that aggregate metrics had not. A hand-tuned threshold would have absorbed
+the same defect silently, and we would have shipped it.
 
 Every verdict is explainable: the filter reports the top three feature
 contributions to the logit for each detection, and rejections carry their reason

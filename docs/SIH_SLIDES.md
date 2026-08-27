@@ -39,13 +39,15 @@ in our repository.
 1. **A learned false-positive filter over physical evidence.** Ten features
    measured from the pixels — shadow coherence, contrast, compactness, relative
    texture — that are *independent of the detector's opinion*, fitted on a
-   held-out survey.
+   held-out survey, with per-detection attribution.
 
-   > **The fit contradicted our own physics prior.** We expected acoustic shadow
-   > to indicate a *real* object. It got a large **negative** weight — because the
-   > darkest strips beside a candidate are usually the **nadir band**, not an
-   > object shadow. A hand-coded "require a shadow" rule would have *hurt*
-   > precision. This is why we fitted instead of hand-tuning.
+   > **Its weights caught a bug in our own pipeline.** An early fit gave acoustic
+   > shadow a large *negative* weight — the opposite of the physics. That was not
+   > a discovery about sonar; it was a symptom of applying a preprocessing chain
+   > the detector had never been trained on. Fixing that mismatch recovered a
+   > **12× F1 improvement** and turned both shadow features positive. An
+   > inspectable verification stage is a *diagnostic instrument*, not just a
+   > classifier — a hand-tuned threshold would have hidden the same defect.
 
 2. **Confidence that means something.** Platt calibration fitted on held-out data;
    when it isn't fitted, every hazard is stamped `calibrated: false`.
@@ -57,7 +59,7 @@ in our repository.
 4. **Confidence ≠ Priority.** "Is it real?" and "should you care?" are different
    questions.
 
-**Visual:** the learned filter's weight bar chart, with `shadow_ratio` negative.
+**Visual:** the mismatched-vs-matched F1 table (0.012 → 0.144), and the learned filter's weight chart.
 
 ---
 
