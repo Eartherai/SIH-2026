@@ -1,5 +1,5 @@
 {
-  "weights": "runs/detect/runs/train/E04-smallobj-tuned/weights/best.pt",
+  "weights": "models/aquashield_primary.pt",
   "split": "val",
   "profile": "none",
   "detector_conf": 0.02,

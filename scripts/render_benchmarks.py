@@ -96,7 +96,7 @@ def t_ablation() -> str:
     out += ["", "**Read this table for direction and magnitude, not for a precise "
                 f"ranking of adjacent rows.** With {ds['gt_objects']} test objects, "
                 "differences of a few percent are within noise "
-                "(`docs/LIMITATIONS.md`, §11)."]
+                "(`docs/LIMITATIONS.md`, §12)."]
     return "\n".join(out)
 
 

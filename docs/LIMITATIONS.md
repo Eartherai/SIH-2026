@@ -91,27 +91,44 @@ trained**, so the licence-clean path is designed, not delivered.
 - **Hyperparameter search.** E03 → E04 is one reasoned step, not a sweep.
 - **Multi-domain model.** One detector, one domain.
 
-## 9. Quality score is a heuristic
+## 9. Our sonar preprocessing did not help, and we ship it disabled
+
+We implemented a physically-justified chain — dropout repair, water-column
+removal, Lee speckle filtering, across-track gain normalisation, dynamic-range
+stretch — and then measured it properly with a matched retrain. It made detection
+**substantially worse** (mAP50 0.0318 vs 0.1163 raw). The default profile is now
+`none`.
+
+This is an honest negative result and it costs us: a good deal of the sonar-
+specific engineering in this repository is, on this dataset with this detector,
+not earning its place in the inference path. It remains useful for QC, for the
+verification features, and as an inspectable option — but we cannot claim it
+improves detection, and we do not.
+
+What we did **not** do is isolate which stage is responsible. A per-stage matched
+ablation would likely show some stages help and others hurt. That work is unrun.
+
+## 10. Quality score is a heuristic
 
 `quality_score` combines dynamic range, dropout, saturation, speckle and usable
 area with hand-chosen weights. It is useful for warning an operator and as a soft
 input to priority. It is **not** a calibrated measure of anything physical, and
 it is labelled as a heuristic in the code.
 
-## 10. Priority weights are a product convention
+## 11. Priority weights are a product convention
 
 The priority formula is transparent and adjustable, but the weights and the
 class-harm table are **our** choices. No official marine-hazard triage standard
 for derelict gear was found during this work, and we do not claim to implement
 one.
 
-## 11. Small-sample statistics
+## 12. Small-sample statistics
 
 The test set holds 191 objects across 612 frames. Differences of a few percent
 between pipeline variants are **within noise**. The ablation table should be read
 for direction and magnitude, not for precise ordering of adjacent rows.
 
-## 12. Two things the model literally cannot do
+## 13. Two things the model literally cannot do
 
 - **Detect an object class it has never seen.** A trained ghost net, a container,
   or a pipeline will be reported — if at all — as MILCO or NOMBO, because those

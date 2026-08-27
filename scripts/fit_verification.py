@@ -23,6 +23,7 @@ from aquashield.confidence.features import extract  # noqa: E402
 from aquashield.confidence.fp_filter import LearnedFPFilter  # noqa: E402
 from aquashield.detection.boxes import xywhn_to_xyxy  # noqa: E402
 from aquashield.detection.detector import Detector  # noqa: E402
+from aquashield.detection.model_meta import preprocess_profile_for_model  # noqa: E402
 from aquashield.evaluation.matching import match  # noqa: E402
 from aquashield.sonar.preprocess import PROFILES, preprocess  # noqa: E402
 from aquashield.sonar.qc import assess  # noqa: E402
@@ -83,7 +84,10 @@ def main() -> None:
     ap.add_argument("--weights", required=True)
     ap.add_argument("--data-root", default="data/processed/milco_nombo_yolo")
     ap.add_argument("--split", default="val")
-    ap.add_argument("--profile", default="standard")
+    ap.add_argument("--profile", default=None,
+                    help="preprocessing profile. Defaults to the one the "
+                         "checkpoint was TRAINED on (its .meta.json sidecar); "
+                         "a mismatch here silently degrades the fit.")
     ap.add_argument("--conf", type=float, default=0.02,
                     help="deliberately very low -- the filter can only learn from "
                          "candidates the detector actually emits")
@@ -97,6 +101,15 @@ def main() -> None:
     ap.add_argument("--out-dir", default="models")
     ap.add_argument("--tag", default="milco_nombo")
     args = ap.parse_args()
+
+    profile = args.profile or preprocess_profile_for_model(args.weights)
+    if args.profile is None:
+        print(f"preprocessing profile: '{profile}' (from the checkpoint's metadata)")
+    elif profile != preprocess_profile_for_model(args.weights):
+        print(f"WARNING: fitting with profile '{profile}' but this checkpoint was "
+              f"trained on '{preprocess_profile_for_model(args.weights)}'. "
+              "A mismatch degrades both the filter and the calibration.")
+    args.profile = profile
 
     det = Detector(args.weights, conf=args.conf)
     split_dir = Path(args.data_root) / args.split

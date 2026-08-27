@@ -230,3 +230,45 @@ class TestDashboardEndToEnd:
         assert {"Frames", "Raw candidates", "Unique hazards"} <= labels
         dl = [d.label for d in at.get("download_button")]
         assert any("JSON" in d for d in dl) and any("CSV" in d for d in dl)
+
+
+class TestOfflineGuarantee:
+    """AQUA-SHIELD must run with no network access. These tests keep it that way."""
+
+    def test_no_network_calls_in_inference_code(self):
+        import re
+        bad = re.compile(r"\b(requests\.(get|post)|urlopen|httpx\.|socket\.socket)\b")
+        offenders = []
+        for f in list((ROOT / "src").rglob("*.py")) + [ROOT / "dashboard" / "app.py"]:
+            for i, line in enumerate(f.read_text().splitlines(), 1):
+                if line.lstrip().startswith("#"):
+                    continue
+                if bad.search(line):
+                    offenders.append(f"{f.relative_to(ROOT)}:{i}")
+        assert not offenders, f"network calls in the inference path: {offenders}"
+
+    def test_no_cloud_ai_sdk_dependencies(self):
+        req = (ROOT / "requirements.txt").read_text().lower()
+        for pkg in ("openai", "anthropic", "google-generativeai", "cohere", "boto3"):
+            assert pkg not in req, f"{pkg} must not be a dependency"
+
+    def test_offline_map_flag_is_honoured(self, monkeypatch):
+        """With AQS_OFFLINE_MAP=1 the dashboard must not request remote tiles."""
+        pytest.importorskip("streamlit.testing.v1")
+        if not (ROOT / "demo_data").exists() or _weights() is None:
+            pytest.skip("demo data or model unavailable")
+        monkeypatch.setenv("AQS_OFFLINE_MAP", "1")
+        from streamlit.testing.v1 import AppTest
+        at = AppTest.from_file(str(ROOT / "dashboard" / "app.py"), default_timeout=300)
+        at.run()
+        sc = [s for s in at.selectbox if s.label == "Scenario"]
+        geo = [o for o in sc[0].options if "04_georeferenced" in str(o)] if sc else []
+        if geo:
+            sc[0].set_value(geo[0])
+            at.run()
+        btn = [b for b in at.button if "Process" in b.label]
+        btn[0].click()
+        at.run()
+        assert not at.exception, at.exception
+        assert any("Offline map" in str(i.value) for i in at.info), \
+            "offline mode did not announce itself"

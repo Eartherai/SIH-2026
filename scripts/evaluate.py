@@ -21,6 +21,7 @@ from aquashield.confidence.calibration import IdentityCalibrator, PlattCalibrato
 from aquashield.confidence.fp_filter import LearnedFPFilter, RuleBasedFilter  # noqa: E402
 from aquashield.detection.boxes import xywhn_to_xyxy  # noqa: E402
 from aquashield.detection.detector import Detector  # noqa: E402
+from aquashield.detection.model_meta import preprocess_profile_for_model  # noqa: E402
 from aquashield.detection.taxonomy import Taxonomy  # noqa: E402
 from aquashield.evaluation.matching import aggregate, match  # noqa: E402
 from aquashield.pipeline import AquaShieldPipeline, PipelineConfig  # noqa: E402
@@ -109,8 +110,13 @@ def main() -> None:
     print(f"learned FP filter: {'LOADED' if has_learned else 'NOT AVAILABLE (rule-based fallback)'}")
     print(f"calibration      : {'LOADED' if has_cal else 'NOT AVAILABLE (raw scores)'}\n")
 
-    none_pp = PROFILES["none"]
-    std_pp = PROFILES["standard"]
+    # The MATCHED profile is whatever this checkpoint was trained on.
+    matched_name = preprocess_profile_for_model(args.weights)
+    none_pp = PROFILES.get(matched_name, PROFILES["none"])
+    mismatch_name = "standard" if matched_name != "standard" else "none"
+    std_pp = PROFILES[mismatch_name]
+    print(f"matched preprocessing profile for this checkpoint: '{matched_name}'")
+    print(f"negative-control (mismatched) profile: '{mismatch_name}'\n")
 
     # Variants are ordered so each row adds ONE stage to the row above.
     #
@@ -121,7 +127,7 @@ def main() -> None:
     # "preprocessing is useless" -- see scripts/ablate_preprocessing.py for the
     # matched comparison that actually answers that question.
     variants = [
-        ("A_detector_only", dict(pp_cfg=none_pp, fp_filter=None, calibrator=None,
+        ("A_detector_only_matched_preprocessing", dict(pp_cfg=none_pp, fp_filter=None, calibrator=None,
                                  use_fp=False, use_tiling=True)),
         ("B_no_tiling_control", dict(pp_cfg=none_pp, fp_filter=None, calibrator=None,
                                      use_fp=False, use_tiling=False)),
@@ -155,6 +161,8 @@ def main() -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "tag": args.tag,
+        "matched_profile": matched_name,
+        "mismatched_control_profile": mismatch_name,
         "variant_note": (
             "The detector was trained on RAW frames, so 'no preprocessing' is the "
             "MATCHED configuration and the correct baseline. Row X is a negative "

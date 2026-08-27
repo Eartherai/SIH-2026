@@ -79,7 +79,44 @@ Every stage is individually switchable and is measured in the ablation
 6. **Dynamic-range stretch** — percentile clip, robust to specular returns.
 7. **CLAHE** — optional, off in the default profile.
 
-Profiles: `none`, `minimal`, `standard` (default), `aggressive`.
+Profiles: `none` (**default**), `minimal`, `standard`, `aggressive`.
+
+### Does any of this actually help? We measured it. Mostly, no.
+
+The brief is explicit: do not apply a preprocessing operation because it sounds
+appropriate — measure its effect. We did, twice, and the answer was not the one
+the design assumed.
+
+**First measurement (confounded).** Applying `standard` at inference to a
+detector trained on raw frames cost a **12× F1 drop**. That was a
+train/inference distribution mismatch, not a verdict on preprocessing.
+
+**Second measurement (matched).** We built a preprocessed copy of the dataset
+(`scripts/prepare_preprocessed.py`) and retrained with an identical recipe, so
+train and inference both saw the same chain. On the held-out test surveys:
+
+| Detector | Trained + evaluated on | mAP50 | Precision | Recall |
+|---|---|---|---|---|
+| E04 | **raw** | **0.1163** | 0.3444 | 0.1639 |
+| E06 | preprocessed (water-column removal + Lee + gain norm + DR stretch) | 0.0318 | 0.0769 | 0.1089 |
+
+**Conclusion: this preprocessing chain does not help, even matched.** It makes
+things substantially worse. The default profile is therefore `none`, and the
+chain is retained as an inspectable, switchable option rather than being applied
+by default.
+
+*Why, most likely.* YOLO11n is fine-tuned from COCO weights and its early layers
+are already strong feature extractors; denoising and contrast normalisation
+destroy texture cues it can use, while the water-column inpainting introduces
+synthetic structure that was never in the training distribution of either
+dataset. We did not isolate which stage is most responsible — that ablation was
+not run.
+
+*Caveats.* E06 stopped at epoch 41 (best at 23, 18 epochs without improvement);
+E04 ran 64 (best at 37). The two runs also carry ordinary training variance, and
+with 191 test objects this is one comparison, not a law. What we can say is that
+we found no evidence for the preprocessing chain, and we are not applying it by
+default on the strength of an assumption.
 
 ## Tiling — `sonar/tiling.py`
 
