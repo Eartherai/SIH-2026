@@ -327,3 +327,4 @@ and annotations unmodified.*
 Code released under MIT (`LICENSE`). **Note:** the default detector backend uses
 Ultralytics (**AGPL-3.0**), so the combined work is AGPL. See
 `LEGAL_AND_LICENSES.md`.
+# SIH-2026
