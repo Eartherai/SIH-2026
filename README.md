@@ -159,6 +159,14 @@ and `experiments/` for the raw records.
 
 ### What the verification stage is actually worth
 
+![The false-positive engine on held-out surveys](docs/images/verification_effect.png)
+
+*Real inference on frames the model has never seen. Left: the detector alone.
+Right: after verification. On the two empty-seabed frames every alarm is
+correctly removed; on the target frame the true positive survives and three
+clutter detections are rejected. Regenerate with `python scripts/make_figures.py`.*
+
+
 Measured on the 612 held-out test frames (473 of them target-free):
 
 | | Precision | Recall | True positives | False positives | Frames falsely alarmed |
