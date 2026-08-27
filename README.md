@@ -68,7 +68,8 @@ export AQS_OFFLINE_MAP=1 && ./run_demo.sh
 ## Architecture
 
 ```
-RAW SONAR ─▶ QUALITY CONTROL ─▶ PREPROCESSING ─▶ TILING ─▶ DETECTION
+RAW SONAR ─▶ QUALITY CONTROL ─▶ [PREPROCESSING] ─▶ TILING ─▶ DETECTION
+                                 off by default: measured, didn't help
                                                               │
    REPORT ◀─ PRIORITY ◀─ GEOLOCALIZATION ◀─ DEDUPLICATION ◀───┤
                                                               │
@@ -148,13 +149,31 @@ and `experiments/` for the raw records.
 
 | | Measured |
 |---|---|
-| MPS inference (tiled frame) | **39 ms** |
-| CPU inference (same) | 278 ms |
-| **MPS speedup** | **7.1×** |
-| End-to-end throughput | ~12 frames/s |
-| Peak RSS (full pipeline) | 664 MB |
+| MPS inference (tiled frame) | **21.4 ms** |
+| CPU inference (same) | 82.2 ms |
+| **MPS speedup** | **3.8×** |
+| End-to-end throughput | 37.4 frames/s (27 ms/frame) |
+| Peak RSS (full pipeline) | 640 MB |
 | Model | 2.58 M params, 6.3 GFLOPs, 16 MB |
-| ONNX export | 10.6 MB, 10.8 ms (ONNX Runtime + CoreML EP) |
+| ONNX export | 10.61 MB, 8.5 ms (ONNX Runtime + CoreML EP) |
+
+### What the verification stage is actually worth
+
+Measured on the 612 held-out test frames (473 of them target-free):
+
+| | Precision | Recall | True positives | False positives | Frames falsely alarmed |
+|---|---|---|---|---|---|
+| Detector only | 0.247 | 0.110 | 21 | 64 | 37 / 473 |
+| + hand-written rules | 0.300 | 0.063 | 12 | 28 | 18 / 473 |
+| **+ learned FP filter** | **0.322** | 0.100 | 19 | 40 | **25 / 473** |
+
+The learned filter raises precision by **30%** and removes
+**32%** of falsely-alarmed frames while keeping
+**19 of the 21** true positives the detector found.
+
+The hand-written rule set reaches similar precision but keeps only 12 true
+positives — it buys quiet by throwing away targets. That difference is the
+argument for fitting the filter rather than tuning thresholds by hand.
 
 Detection accuracy is reported on **held-out surveys** in `docs/BENCHMARKS.md`.
 It is modest, and the reasons are stated. It is not inflated by a random split.
@@ -174,6 +193,21 @@ A **12× F1 degradation**. The preprocessing profile is therefore now a property
 of the *checkpoint*, recorded in a `.meta.json` sidecar and selected
 automatically; the dashboard warns if you override it. A test asserts the
 pipeline default stays `none`.
+
+We then asked the harder question properly — *does preprocessing help at all?* —
+by retraining on a preprocessed copy of the dataset with an identical recipe, so
+train and inference matched:
+
+| Detector | Trained + evaluated on | mAP50 | Precision |
+|---|---|---|---|
+| E04 | **raw** | **0.1163** | 0.3444 |
+| E06 | preprocessed | 0.0318 | 0.0769 |
+
+**It does not help.** A genuine negative result: a good deal of the sonar-specific
+preprocessing in this repository does not earn its place in the inference path on
+this dataset, and we ship it disabled rather than applying it because it sounds
+appropriate. It still feeds quality control and the verification features, and it
+remains a switchable, inspectable option. See `docs/LIMITATIONS.md` §9.
 
 ---
 

@@ -108,27 +108,41 @@ improves detection, and we do not.
 What we did **not** do is isolate which stage is responsible. A per-stage matched
 ablation would likely show some stages help and others hurt. That work is unrun.
 
-## 10. Quality score is a heuristic
+## 10. Detection collapses under added speckle
+
+Controlled degradation on 120 held-out frames (`experiments/robustness.json`):
+adding multiplicative speckle at even the mildest level tested (sigma 0.25) drove
+detections to **zero** — recall 0.036 at baseline, 0.000 under every speckle
+level. Blur and resolution loss degrade gracefully up to a point (blur kernel 5,
+0.5x resolution) and then fail; ping dropout above 5% also fails. Low contrast and
+gain shift are tolerated.
+
+The irony is not lost on us: we implemented a Lee speckle filter precisely for
+this, and then measured that applying it makes detection worse overall (§9). The
+correct fix is almost certainly to **train with speckle augmentation** rather than
+to filter at inference. That experiment is unrun.
+
+## 11. Quality score is a heuristic
 
 `quality_score` combines dynamic range, dropout, saturation, speckle and usable
 area with hand-chosen weights. It is useful for warning an operator and as a soft
 input to priority. It is **not** a calibrated measure of anything physical, and
 it is labelled as a heuristic in the code.
 
-## 11. Priority weights are a product convention
+## 12. Priority weights are a product convention
 
 The priority formula is transparent and adjustable, but the weights and the
 class-harm table are **our** choices. No official marine-hazard triage standard
 for derelict gear was found during this work, and we do not claim to implement
 one.
 
-## 12. Small-sample statistics
+## 13. Small-sample statistics
 
 The test set holds 191 objects across 612 frames. Differences of a few percent
 between pipeline variants are **within noise**. The ablation table should be read
 for direction and magnitude, not for precise ordering of adjacent rows.
 
-## 13. Two things the model literally cannot do
+## 14. Two things the model literally cannot do
 
 - **Detect an object class it has never seen.** A trained ghost net, a container,
   or a pipeline will be reported — if at all — as MILCO or NOMBO, because those

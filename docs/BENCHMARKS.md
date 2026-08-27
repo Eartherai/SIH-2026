@@ -43,6 +43,7 @@ Full records in `experiments/registry.jsonl`.
 | `E03-baseline-yolo11n` | imgsz 640, lr0 0.005, mosaic 1.0, scale 0.5 | 28* | **0.1011** | 0.0390 | 0.1668 | 0.1514 |
 | `E04-smallobj-tuned` | imgsz 640, lr0 0.002, mosaic 0.3, scale 0.25 | 64* | **0.1163** | 0.0396 | 0.3444 | 0.1639 |
 | `E05-finetune-nomosaic` | imgsz 640, lr0 0.0005, mosaic 0.0, scale 0.2 | 18* | **0.1249** | 0.0408 | 0.3017 | 0.1708 |
+| `E06-preprocessed-matched` | imgsz 640, lr0 0.002, mosaic 0.3, scale 0.25 | 41* | **0.0318** | 0.0093 | 0.0769 | 0.1089 |
 
 \* stopped early by the operator; see `notes` in `experiments/registry.jsonl`.
 
@@ -94,7 +95,14 @@ because those would invalidate the copied labels.
 
 <!-- BENCHMARK:PREPROCESSING -->
 
-_Not yet measured. Run the command in section 9 to populate this table._
+| Detector trained on | Inference input | P | R | F1 | FP | FA-frames |
+|---|---|---|---|---|---|---|
+| raw | raw | 0.2471 | 0.1099 | 0.1522 | 64 | 37/473 |
+| raw | preprocessed | 0.0324 | 0.0524 | 0.0400 | 299 | 144/473 |
+| preprocessed | preprocessed | 0.0615 | 0.2932 | 0.1016 | 855 | 285/473 |
+| preprocessed | raw | 0.1368 | 0.1518 | 0.1439 | 183 | 76/473 |
+
+**Conclusion.** Comparing only the MATCHED cells, training and inferring on raw imagery gives the better F1 (preprocessed 0.1016 vs raw 0.1522); false-alarm frames 285 vs 37 of 473 empty frames. The MISMATCHED cell (raw-trained detector, preprocessed input) scores F1 0.0400 — the cost of applying a preprocessing chain the detector was never trained on.
 
 ---
 
@@ -111,7 +119,24 @@ matched 2×2 in section 3, not by row X.
 
 <!-- BENCHMARK:ABLATION -->
 
-_Not yet measured. Run the command in section 9 to populate this table._
+Model: `aquashield_primary.pt` · device `mps` · 612 frames (139 with targets, 473 empty, 191 objects) · match IoU 0.3
+
+| Variant | P | R | F1 | TP | FP | FN | FA-frames | ms/frame |
+|---|---|---|---|---|---|---|---|---|
+| A. detector only matched preprocessing | 0.2471 | 0.1099 | 0.1522 | 21 | 64 | 170 | 37/473 | 50 |
+| B. no tiling control | 0.2526 | 0.1257 | 0.1678 | 24 | 71 | 167 | 43/473 | 38 |
+| C. plus rule based fp filter | 0.3000 | 0.0628 | 0.1039 | 12 | 28 | 179 | 18/473 | 48 |
+| D. plus learned fp filter | 0.3220 | 0.0995 | 0.1520 | 19 | 40 | 172 | 25/473 | 49 |
+| E. full pipeline calibrated | 0.3220 | 0.0995 | 0.1520 | 19 | 40 | 172 | 25/473 | 72 |
+| X. mismatched preprocessing control | 0.0102 | 0.0052 | 0.0069 | 1 | 97 | 190 | 57/473 | 84 |
+
+**How to read this table.**
+
+- The **learned FP filter (row D)** is the headline result: it is the stage that raises precision and cuts false alarms while keeping most true positives.
+- **Rows D and E are identical on P/R/F1, and that is expected.** Platt calibration is a monotonic transform of the score; it changes the *number reported to the operator*, not which detections are accepted. Its effect is measured as calibration error (section 2 of `scripts/fit_verification.py` output), not as precision.
+- **Row X is a negative control**, not a preprocessing result.
+
+**Read this for direction and magnitude, not for a precise ranking of adjacent rows.** With 191 test objects, differences of a few percent are within noise (`docs/LIMITATIONS.md`, §12).
 
 ---
 
@@ -123,20 +148,20 @@ _Not yet measured. Run the command in section 9 to populate this table._
 
 | Stage | mean | p95 |
 |---|---|---|
-| quality control | 73.54 ms | 86.71 ms |
-| preprocess standard | 30.29 ms | 32.75 ms |
-| preprocess aggressive | 66.86 ms | 83.87 ms |
+| quality control | 31.70 ms | 31.82 ms |
+| preprocess standard | 14.11 ms | 14.37 ms |
+| preprocess aggressive | 33.99 ms | 34.38 ms |
 
 ### Inference and end-to-end
 
 | Device | Inference only | Full frame pipeline | Throughput | Peak RSS |
 |---|---|---|---|---|
-| **mps** | 39.13 ms (p95 49.58) | 156.98 ms | 12.10 frames/s | 664 MB |
-| **cpu** | 278.21 ms (p95 354.43) | 364.86 ms | 5.63 frames/s | 938 MB |
+| **mps** | 21.40 ms (p95 22.28) | 54.77 ms | 37.38 frames/s | 640 MB |
+| **cpu** | 82.24 ms (p95 83.21) | 119.00 ms | 17.51 frames/s | 900 MB |
 
-**MPS speedup over CPU (inference only): 7.11×**
+**MPS speedup over CPU (inference only): 3.84×**
 
-Model: 16.06 MB · 30 frames · shapes {'(1024, 1024)': 9, '(416, 416)': 21}
+Model: 16.07 MB · 30 frames · shapes {'(1024, 1024)': 9, '(416, 416)': 21}
 
 Peak RSS stayed far below the 24 GB unified-memory budget, so the pipeline is not memory-bound on this class of machine.
 
@@ -146,11 +171,11 @@ Peak RSS stayed far below the 24 GB unified-memory budget, so the pipeline is no
 
 <!-- BENCHMARK:EDGE -->
 
-Source checkpoint: 16.06 MB at imgsz 640
+Source checkpoint: 16.07 MB at imgsz 640
 
 | Format | Size | Export time | Runtime latency |
 |---|---|---|---|
-| ONNX | 10.61 MB | 2.7s | 10.84 ms (p95 15.84) |
+| ONNX | 10.61 MB | 1.0s | 8.49 ms (p95 10.68) |
 
 ONNX Runtime providers: `CoreMLExecutionProvider, AzureExecutionProvider, CPUExecutionProvider`
 
@@ -164,7 +189,30 @@ Synthetic degradation isolates variables in a way real data cannot; it does
 
 <!-- BENCHMARK:ROBUSTNESS -->
 
-_Not yet measured. Run the command in section 9 to populate this table._
+120 held-out frames · match IoU 0.3
+
+| Condition | Level | P | R | F1 | Recall retained | FA-frames |
+|---|---|---|---|---|---|---|
+| baseline | — | 0.2000 | 0.0357 | 0.0606 | 1.00× | 4/60 |
+| speckle | 0.25 | 0.0000 | 0.0000 | 0.0000 | 0.00× | 0/60 |
+| speckle | 0.5 | 0.0000 | 0.0000 | 0.0000 | 0.00× | 0/60 |
+| speckle | 1.0 | 0.0000 | 0.0000 | 0.0000 | 0.00× | 0/60 |
+| low contrast | 0.7 | 0.2667 | 0.0476 | 0.0808 | 1.33× | 4/60 |
+| low contrast | 0.5 | 0.4000 | 0.0476 | 0.0851 | 1.33× | 2/60 |
+| low contrast | 0.3 | 0.2857 | 0.0238 | 0.0440 | 0.67× | 1/60 |
+| blur | 3 | 0.4000 | 0.0476 | 0.0851 | 1.33× | 1/60 |
+| blur | 5 | 0.3333 | 0.0238 | 0.0444 | 0.67× | 1/60 |
+| blur | 9 | 0.0000 | 0.0000 | 0.0000 | 0.00× | 1/60 |
+| resolution loss | 0.75 | 0.3000 | 0.0357 | 0.0638 | 1.00× | 2/60 |
+| resolution loss | 0.5 | 0.1667 | 0.0119 | 0.0222 | 0.33× | 1/60 |
+| resolution loss | 0.25 | 0.0000 | 0.0000 | 0.0000 | 0.00× | 1/60 |
+| ping dropout | 0.05 | 0.1429 | 0.0238 | 0.0408 | 0.67× | 6/60 |
+| ping dropout | 0.15 | 0.0000 | 0.0000 | 0.0000 | 0.00× | 2/60 |
+| ping dropout | 0.3 | 0.0000 | 0.0000 | 0.0000 | 0.00× | 5/60 |
+| gain shift | 0.6 | 0.2727 | 0.0357 | 0.0632 | 1.00× | 2/60 |
+| gain shift | 1.5 | 0.0909 | 0.0119 | 0.0211 | 0.33× | 3/60 |
+
+> Perturbations are SYNTHETIC and isolate one variable at a time. They do not replace validation on real degraded surveys.
 
 ---
 

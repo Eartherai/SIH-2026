@@ -1,7 +1,8 @@
 # SIH submission slides — content
 
-Six slides. Numbers marked **[TBD]** must be filled from `docs/BENCHMARKS.md`
-before submission — do not put an unverified figure on a slide.
+Six slides. Every figure here is generated from `experiments/` and matches
+`docs/BENCHMARKS.md`. If you change a number, change it there first — do not put
+an unverified figure on a slide.
 
 ---
 
@@ -66,7 +67,9 @@ in our repository.
 ## Slide 3 — Technical Architecture
 
 ```
-RAW SONAR ─▶ QC ─▶ PREPROCESSING ─▶ TILING ─▶ DETECTION
+RAW SONAR ─▶ QC ─▶ [PREPROCESSING] ─▶ TILING ─▶ DETECTION
+                    (off by default —
+                     measured, didn't help)
                                                   │
   REPORT ◀─ PRIORITY ◀─ GEOLOCATION ◀─ DEDUP ◀────┤
                                                   │
@@ -76,7 +79,7 @@ RAW SONAR ─▶ QC ─▶ PREPROCESSING ─▶ TILING ─▶ DETECTION
 | Stage | Substance |
 |---|---|
 | QC | dynamic range, speckle index, dropout rows, water-column detection |
-| Preprocessing | dropout repair · water-column removal · **Lee** speckle filter (speckle is *multiplicative*) · across-track gain normalisation |
+| Preprocessing | dropout repair · water-column removal · **Lee** speckle filter · gain normalisation — implemented, **measured, and disabled by default** because it made detection worse (see slide 6) |
 | Tiling | overlapping tiles at native resolution; seam duplicates merged by IoU **or** intersection-over-smaller |
 | Detection | YOLO11n, 2.58 M params, backend-swappable |
 | Verification | 10 physical features → logistic model fitted on held-out survey |
@@ -95,12 +98,12 @@ OpenCV · pyproj · Streamlit · FastAPI · SQLite · ONNX
 
 | | Measured |
 |---|---|
-| MPS inference (tiled frame) | 39 ms |
-| CPU inference | 278 ms |
-| **MPS speedup** | **7.1×** |
-| Throughput | ~12 frames/s |
-| Peak memory | 664 MB |
-| ONNX export | 10.6 MB, 10.8 ms |
+| MPS inference (tiled frame) | 21.4 ms |
+| CPU inference | 82.2 ms |
+| **MPS speedup** | **3.8×** |
+| Throughput | 37.4 frames/s |
+| Peak memory | 640 MB |
+| ONNX export | 10.61 MB, 8.5 ms |
 
 **Data legitimacy.** Trained on MILCO/NOMBO — real AUV side-scan, **CC BY 4.0**,
 DOI `10.6084/m9.figshare.24574879`. Every dependency licence verified
@@ -110,7 +113,13 @@ programmatically.
 Train 2015+2010 → calibrate 2017 → test 2018+2021. A random split leaks, because
 consecutive frames share seabed, gain settings and often the same object.
 
-**Ablation (held-out surveys):** **[TBD — insert the table from docs/BENCHMARKS.md]**
+**Ablation (612 held-out frames, 473 of them target-free):**
+
+| | Precision | True positives | Frames falsely alarmed |
+|---|---|---|---|
+| Detector only | 0.247 | 21 | 37 / 473 |
+| + hand-written rules | 0.300 | 12 | 18 / 473 |
+| **+ learned FP filter** | **0.322** | 19 | **25 / 473** |
 
 **Visual:** the ablation table, detector-only → full pipeline.
 
@@ -119,10 +128,16 @@ consecutive frames share seabed, gain settings and often the same object.
 ## Slide 5 — Impact & Benefits
 
 **Measured prototype outcomes** (not projections):
-- False-alarm frames reduced from **[TBD]** to **[TBD]** on 473 target-free frames
-- Deduplication: **[TBD]** observations → **[TBD]** unique hazards
-- Geolocation uncertainty reported per hazard, and tightened by ~√N over repeat
-  sightings
+- Falsely-alarmed frames cut from **37 to 25** of 473 target-free frames
+  (−32%), while keeping **19 of the 21** true positives the
+  detector found
+- Precision **0.247 → 0.322** (+30%)
+- Hand-written rules reach similar precision but keep only **12** true
+  positives — they buy quiet by discarding targets. That gap is the case for
+  *fitting* the filter rather than tuning thresholds.
+- Throughput **37.4 frames/s** on a laptop (27 ms/frame), peak memory 640 MB
+- Deduplication merges repeat sightings into unique hazards; positional
+  uncertainty tightens by ~√N over repeat fixes
 
 **Operational benefit**
 - The analyst reads a ranked hazard register instead of raw imagery.
@@ -158,6 +173,9 @@ probabilistic outputs · Guo et al. (2017) calibration of modern neural networks
 - Geolocation accuracy never validated (our data ships no navigation)
 - Never run on a Jetson or an AUV
 - Ultralytics backend is AGPL-3.0
+- Our own sonar preprocessing chain **did not help** when measured properly, and
+  ships disabled (mAP50 0.032 preprocessed vs 0.116 raw)
+- Detection collapses entirely under added speckle noise
 
 > Judges trust a team that states its limits. Put this on the slide; don't wait to
 > be asked.

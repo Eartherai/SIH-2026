@@ -19,6 +19,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from aquashield.detection.detector import Detector          # noqa: E402
+from aquashield.detection.model_meta import preprocess_profile_for_model  # noqa: E402
 from aquashield.detection.taxonomy import Taxonomy          # noqa: E402
 from aquashield.device import select_device                 # noqa: E402
 from aquashield.pipeline import AquaShieldPipeline, PipelineConfig  # noqa: E402
@@ -75,6 +76,7 @@ def main() -> None:
         "weights": args.weights,
         "model_size_mb": round(model_bytes / 1e6, 2),
         "n_images": len(imgs),
+        "preprocess_profile": preprocess_profile_for_model(args.weights),
         "image_shapes": {str(k): v for k, v in shapes.items()},
         "stages": {}, "devices": {},
     }
@@ -101,7 +103,9 @@ def main() -> None:
             continue
         print(f"\n[{dev}]")
         det = Detector(args.weights, device=dev, conf=0.10)
-        pipe = AquaShieldPipeline(det, PipelineConfig(preprocess_profile="standard"),
+        prof = preprocess_profile_for_model(args.weights)
+        pipe = AquaShieldPipeline(det, PipelineConfig(preprocess_profile=prof,
+                                                      preprocess_config=PROFILES.get(prof)),
                                   taxonomy=Taxonomy("milco_nombo"))
 
         pure = timeit(lambda: det.detect(ref, 640, 128), 20)

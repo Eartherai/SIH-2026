@@ -1,17 +1,17 @@
 {
-  "utc": "2026-08-27T13:06:59Z",
+  "utc": "2026-08-27T13:58:09Z",
   "host": {
     "platform": "macOS-26.5.2-arm64-arm-64bit",
     "machine": "arm64"
   },
-  "source_weights": "models/_e03_snapshot.pt",
-  "source_size_mb": 16.06,
+  "source_weights": "models/aquashield_primary.pt",
+  "source_size_mb": 16.07,
   "imgsz": 640,
   "exports": {
     "onnx": {
-      "path": "models/_e03_snapshot.onnx",
+      "path": "models/aquashield_primary.onnx",
       "size_mb": 10.61,
-      "export_seconds": 2.7,
+      "export_seconds": 1.0,
       "benchmark": {
         "providers": [
           "CoreMLExecutionProvider",
@@ -24,9 +24,9 @@
           640,
           640
         ],
-        "mean_ms": 10.84,
-        "p50_ms": 10.89,
-        "p95_ms": 15.84
+        "mean_ms": 8.49,
+        "p50_ms": 8.57,
+        "p95_ms": 10.68
       }
     }
   }

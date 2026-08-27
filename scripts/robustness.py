@@ -26,9 +26,11 @@ from aquashield.confidence.calibration import PlattCalibrator  # noqa: E402
 from aquashield.confidence.fp_filter import LearnedFPFilter  # noqa: E402
 from aquashield.detection.boxes import xywhn_to_xyxy  # noqa: E402
 from aquashield.detection.detector import Detector  # noqa: E402
+from aquashield.detection.model_meta import preprocess_profile_for_model  # noqa: E402
 from aquashield.detection.taxonomy import Taxonomy  # noqa: E402
 from aquashield.evaluation.matching import aggregate, match  # noqa: E402
 from aquashield.pipeline import AquaShieldPipeline, PipelineConfig  # noqa: E402
+from aquashield.sonar.preprocess import PROFILES  # noqa: E402
 
 RNG = np.random.default_rng(0)
 
@@ -134,8 +136,13 @@ def main() -> None:
           f"{sum(1 for _,_,g in frames if not len(g))} empty)\n")
 
     det = Detector(args.weights, conf=args.conf)
+    # Use the profile this checkpoint was TRAINED on. Using anything else makes
+    # the baseline meaningless, because the mismatch dominates every perturbation.
+    profile = preprocess_profile_for_model(args.weights)
+    print(f"preprocessing profile: '{profile}' (from the checkpoint's metadata)\n")
     pipe = AquaShieldPipeline(
-        det, PipelineConfig(preprocess_profile="standard"),
+        det, PipelineConfig(preprocess_profile=profile,
+                            preprocess_config=PROFILES.get(profile)),
         fp_filter=LearnedFPFilter.load("models/fp_filter_milco_nombo.json"),
         calibrator=PlattCalibrator.load("models/calibration_milco_nombo.json"),
         taxonomy=Taxonomy("milco_nombo"))
@@ -175,6 +182,7 @@ def main() -> None:
         "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "weights": args.weights, "device": det.device,
         "match_iou_threshold": args.iou_thr,
+        "preprocess_profile": profile,
         "note": "Perturbations are SYNTHETIC and isolate one variable at a time. "
                 "They do not replace validation on real degraded surveys.",
         "frames": len(frames), "results": rows}, indent=2))

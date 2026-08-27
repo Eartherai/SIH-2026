@@ -77,7 +77,9 @@ def t_ablation() -> str:
     if not d:
         return MISSING
     ds = d["dataset"]
-    out = [f"Model: `{Path(d['weights']).parent.parent.name}` · device `{d['device']}` · "
+    wp = Path(d['weights'])
+    model_label = wp.parent.parent.name if wp.parent.name == "weights" else wp.name
+    out = [f"Model: `{model_label}` · device `{d['device']}` · "
            f"{ds['frames']} frames ({ds['frames_with_targets']} with targets, "
            f"{ds['empty_frames']} empty, {ds['gt_objects']} objects) · "
            f"match IoU {d['match_iou_threshold']}", "",
@@ -93,10 +95,22 @@ def t_ablation() -> str:
         out += ["", "> The learned FP filter was NOT available for this run; the "
                     "rule-based fallback was used. Fit it with "
                     "`scripts/fit_verification.py`."]
-    out += ["", "**Read this table for direction and magnitude, not for a precise "
-                f"ranking of adjacent rows.** With {ds['gt_objects']} test objects, "
-                "differences of a few percent are within noise "
-                "(`docs/LIMITATIONS.md`, §12)."]
+    out += ["",
+            "**How to read this table.**",
+            "",
+            "- The **learned FP filter (row D)** is the headline result: it is the "
+            "stage that raises precision and cuts false alarms while keeping most "
+            "true positives.",
+            "- **Rows D and E are identical on P/R/F1, and that is expected.** "
+            "Platt calibration is a monotonic transform of the score; it changes "
+            "the *number reported to the operator*, not which detections are "
+            "accepted. Its effect is measured as calibration error (section 2 of "
+            "`scripts/fit_verification.py` output), not as precision.",
+            "- **Row X is a negative control**, not a preprocessing result.",
+            "",
+            "**Read this for direction and magnitude, not for a precise ranking of "
+            f"adjacent rows.** With {ds['gt_objects']} test objects, differences of "
+            "a few percent are within noise (`docs/LIMITATIONS.md`, §12)."]
     return "\n".join(out)
 
 
