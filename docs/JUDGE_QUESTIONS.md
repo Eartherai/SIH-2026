@@ -149,6 +149,20 @@ false-alarm frames. The profile is now a property of the checkpoint, stored in a
 sidecar and selected automatically, with a test that stops the bad default coming
 back.
 
+**16c. You built a whole sonar preprocessing chain and then disabled it. Why?**
+*20s:* Because we measured it and it did not help. Retrained with preprocessing
+matched at train and inference time, mAP50 was 0.032 versus 0.116 for the
+raw-trained model. Shipping it on by default would have been applying an
+operation because it sounds appropriate — which is exactly what the problem
+statement warns against.
+*Deep:* Our best explanation is that YOLO11n is fine-tuned from COCO weights whose
+early layers already extract texture well; denoising and contrast normalisation
+destroy cues it can use, and water-column inpainting introduces synthetic
+structure. We did **not** isolate which stage is responsible — a per-stage matched
+ablation is unrun. The chain is retained as an inspectable option and still feeds
+QC and the verification features. It is a genuine negative result and it costs us
+some of the sonar-specific engineering in this repo.
+
 **17. Why IoU 0.3 instead of the standard 0.5?**
 *20s:* At ~24 px, a 3–4 pixel annotation offset — well within inter-annotator
 agreement for sonar — drops IoU below 0.5 for a visually perfect detection. We
