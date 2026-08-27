@@ -1,0 +1,81 @@
+{
+  "dataset": "milco_nombo",
+  "source_doi": "10.6084/m9.figshare.24574879",
+  "license": "CC BY 4.0",
+  "split_strategy": "survey-year level (no random image shuffling)",
+  "split_by_year": {
+    "train": [
+      "2015",
+      "2010"
+    ],
+    "val": [
+      "2017"
+    ],
+    "test": [
+      "2018",
+      "2021"
+    ]
+  },
+  "class_names": [
+    "MILCO",
+    "NOMBO"
+  ],
+  "splits": {
+    "train": {
+      "frames": 465,
+      "negative_frames": 319,
+      "positive_frames": 146,
+      "objects": {
+        "MILCO": 264,
+        "NOMBO": 183
+      },
+      "total_objects": 447,
+      "years": [
+        "2015",
+        "2010"
+      ],
+      "members_sample": [
+        "2015/0001_2015.jpg",
+        "2015/0002_2015.jpg",
+        "2015/0003_2015.jpg"
+      ]
+    },
+    "val": {
+      "frames": 93,
+      "negative_frames": 74,
+      "positive_frames": 19,
+      "objects": {
+        "MILCO": 28,
+        "NOMBO": 2
+      },
+      "total_objects": 30,
+      "years": [
+        "2017"
+      ],
+      "members_sample": [
+        "2017/0001_2017.jpg",
+        "2017/0002_2017.jpg",
+        "2017/0003_2017.jpg"
+      ]
+    },
+    "test": {
+      "frames": 612,
+      "negative_frames": 473,
+      "positive_frames": 139,
+      "objects": {
+        "MILCO": 145,
+        "NOMBO": 46
+      },
+      "total_objects": 191,
+      "years": [
+        "2018",
+        "2021"
+      ],
+      "members_sample": [
+        "2018/0001_2018.jpg",
+        "2018/0002_2018.jpg",
+        "2018/0003_2018.jpg"
+      ]
+    }
+  }
+}

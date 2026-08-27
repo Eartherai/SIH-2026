@@ -1,0 +1,38 @@
+# --- Core numerics / imaging ---
+numpy>=1.26,<2.3
+scipy>=1.13
+pandas>=2.2
+pillow>=10.3
+opencv-python-headless>=4.10
+scikit-image>=0.24
+scikit-learn>=1.5
+
+# --- Deep learning (Apple Silicon MPS supported) ---
+torch>=2.4
+torchvision>=0.19
+
+# --- Detector backend (AGPL-3.0 -- see LEGAL_AND_LICENSES.md) ---
+ultralytics>=8.3,<8.4   # 8.4.x diverged on this dataset; see docs/BENCHMARKS.md
+
+# --- Geospatial ---
+pyproj>=3.6
+tifffile>=2024.7
+shapely>=2.0
+
+# --- Dashboard ---
+streamlit>=1.38
+folium>=0.17
+streamlit-folium>=0.22
+plotly>=5.23
+
+# --- API ---
+fastapi>=0.115
+uvicorn>=0.30
+python-multipart>=0.0.9
+pydantic>=2.8
+
+# --- Utils / test ---
+pyyaml>=6.0
+tqdm>=4.66
+requests>=2.32
+pytest>=8.3

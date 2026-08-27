@@ -1,0 +1,87 @@
+# AQUA-SHIELD class taxonomy and per-source mappings.
+#
+# DESIGN NOTE (honesty first):
+#   We do NOT invent classes that a source dataset's annotation semantics cannot
+#   support. Each public dataset is mapped only onto the labels its annotators
+#   actually distinguished. Anything finer is left to `unknown_anomaly`.
+
+# ---------------------------------------------------------------------------
+# Level 1 - the operational decision an analyst actually needs
+# ---------------------------------------------------------------------------
+level1:
+  MAN_MADE:
+    id: 0
+    description: "Object judged anthropogenic by the source annotators."
+  AMBIGUOUS:
+    id: 1
+    description: >
+      A detected bottom object whose man-made status is NOT established by the
+      source annotation. Includes natural clutter (rock clusters, ripple crests)
+      and non-target debris. This is the class that drives false-positive control.
+
+# ---------------------------------------------------------------------------
+# Level 2 - object category (only where a dataset genuinely supports it)
+# ---------------------------------------------------------------------------
+level2:
+  ghost_fishing_gear:   {level1: MAN_MADE,  description: "Derelict fishing gear: pots, traps, nets."}
+  mine_like_object:     {level1: MAN_MADE,  description: "Compact cylindrical/spherical man-made target."}
+  shipwreck_structure:  {level1: MAN_MADE,  description: "Large man-made structure / wreck."}
+  pipe_cylinder:        {level1: MAN_MADE,  description: "Elongated man-made cylindrical object."}
+  other_man_made:       {level1: MAN_MADE,  description: "Anthropogenic but uncategorised."}
+  bottom_object_uncertain:
+    level1: AMBIGUOUS
+    description: >
+      Bottom object detected but NOT confirmed man-made by annotators.
+      Treated as a hard negative for the man-made decision.
+  unknown_anomaly:      {level1: AMBIGUOUS, description: "Anomalous return, category unresolved."}
+
+# ---------------------------------------------------------------------------
+# Source dataset mappings
+# ---------------------------------------------------------------------------
+sources:
+
+  milco_nombo:
+    citation: "Pessanha Santos, N. & Moura, R. (2024). Data in Brief. DOI 10.1016/j.dib.2024.110132"
+    data_doi: "10.6084/m9.figshare.24574879"
+    license: "CC BY 4.0"
+    native_classes:
+      0:
+        native_name: MILCO
+        native_meaning: "MIne-Like COntact"
+        aqs_level2: mine_like_object
+        aqs_level1: MAN_MADE
+        note: "Annotator judged the contact mine-like, i.e. a compact man-made target."
+      1:
+        native_name: NOMBO
+        native_meaning: "NOn-Mine-like BOttom Object"
+        aqs_level2: bottom_object_uncertain
+        aqs_level1: AMBIGUOUS
+        note: >
+          IMPORTANT: NOMBO does not assert 'natural'. It asserts 'not mine-like'.
+          We therefore map it to AMBIGUOUS, never to a man-made subclass.
+          Separating MILCO from NOMBO is the core discrimination task.
+
+  sss_crab_pot:
+    citation: "PINGEcosystem, sss-crab-pot-detection-ds (HuggingFace). DOI 10.57967/hf/8397"
+    license: "CC BY-SA 4.0"
+    native_classes:
+      0:
+        native_name: Crab-Pot
+        aqs_level2: ghost_fishing_gear
+        aqs_level1: MAN_MADE
+        note: "High-confidence derelict crab pot."
+      1:
+        native_name: Maybe-Crab-Pot
+        aqs_level2: bottom_object_uncertain
+        aqs_level1: AMBIGUOUS
+        note: "Annotator was NOT confident. Mapped to AMBIGUOUS, not to ghost gear."
+
+# ---------------------------------------------------------------------------
+# Detector head configuration
+# ---------------------------------------------------------------------------
+# The detector is trained on the NATIVE classes of whichever domain it targets.
+# Taxonomy translation happens in src/aquashield/detection/taxonomy.py so that
+# a retrained/replacement model never silently changes report semantics.
+detector_heads:
+  milco_nombo:  ["MILCO", "NOMBO"]
+  sss_crab_pot: ["Crab-Pot", "Maybe-Crab-Pot"]

@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+data/raw/
+data/processed/
+outputs/
+runs/
+*.pt
+!models/README.md
+models/*.pt
+models/*.onnx
+.streamlit/secrets.toml

@@ -1,0 +1,22 @@
+{
+  "scenario": "02_hard_targets",
+  "title": "Low-contrast / small targets",
+  "description": "Held-out frames whose annotated targets are small and poorly separated from the seabed. Expect lower confidence and some misses - this scenario exists to show the failure mode honestly, not to hide it.",
+  "short_description": "Small, low-contrast targets. Expect misses.",
+  "frame_count": 8,
+  "frames": [
+    "0412_2018.jpg",
+    "0437_2018.jpg",
+    "0451_2018.jpg",
+    "0363_2018.jpg",
+    "0445_2018.jpg",
+    "0443_2018.jpg",
+    "0442_2018.jpg",
+    "0510_2018.jpg"
+  ],
+  "source_dataset": "MILCO/NOMBO side-scan sonar (figshare 24574879)",
+  "license": "CC BY 4.0",
+  "attribution": "Imagery: Pessanha Santos, N. & Moura, R. (2024), 'Side-scan sonar imaging data of underwater vehicles for mine detection', Data in Brief 53:110132. figshare DOI 10.6084/m9.figshare.24574879. Licensed CC BY 4.0.",
+  "survey_id": "AQS-DEMO-02",
+  "navigation": "none - geolocation will report UNAVAILABLE"
+}

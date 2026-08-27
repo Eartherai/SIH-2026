@@ -1,0 +1,22 @@
+{
+  "scenario": "01_clear_targets",
+  "title": "Clear man-made targets",
+  "description": "Held-out frames whose annotated targets are comparatively large and high-contrast. The baseline case.",
+  "short_description": "Large, high-contrast targets on held-out surveys.",
+  "frame_count": 8,
+  "frames": [
+    "0366_2018.jpg",
+    "0462_2018.jpg",
+    "0285_2018.jpg",
+    "0458_2018.jpg",
+    "0460_2018.jpg",
+    "0286_2018.jpg",
+    "0365_2018.jpg",
+    "0454_2018.jpg"
+  ],
+  "source_dataset": "MILCO/NOMBO side-scan sonar (figshare 24574879)",
+  "license": "CC BY 4.0",
+  "attribution": "Imagery: Pessanha Santos, N. & Moura, R. (2024), 'Side-scan sonar imaging data of underwater vehicles for mine detection', Data in Brief 53:110132. figshare DOI 10.6084/m9.figshare.24574879. Licensed CC BY 4.0.",
+  "survey_id": "AQS-DEMO-01",
+  "navigation": "none - geolocation will report UNAVAILABLE"
+}

@@ -1,0 +1,39 @@
+{
+  "scenario": "04_georeferenced",
+  "title": "Georeferenced survey line (SYNTHETIC navigation)",
+  "description": "A contiguous frame sequence paired with a SYNTHETIC navigation track so that geolocation, positional uncertainty, spatial deduplication and the map can be demonstrated. The coordinates describe a fictional survey line and are NOT the true positions of these objects.",
+  "short_description": "Geolocation + map demo. Navigation track is SYNTHETIC.",
+  "frame_count": 16,
+  "frames": [
+    "0001_2021.jpg",
+    "0003_2021.jpg",
+    "0007_2021.jpg",
+    "0008_2021.jpg",
+    "0009_2021.jpg",
+    "0010_2021.jpg",
+    "0011_2021.jpg",
+    "0012_2021.jpg",
+    "0013_2021.jpg",
+    "0015_2021.jpg",
+    "0016_2021.jpg",
+    "0018_2021.jpg",
+    "0019_2021.jpg",
+    "0020_2021.jpg",
+    "0021_2018.jpg",
+    "0021_2021.jpg"
+  ],
+  "source_dataset": "MILCO/NOMBO side-scan sonar (figshare 24574879)",
+  "license": "CC BY 4.0",
+  "attribution": "Imagery: Pessanha Santos, N. & Moura, R. (2024), 'Side-scan sonar imaging data of underwater vehicles for mine detection', Data in Brief 53:110132. figshare DOI 10.6084/m9.figshare.24574879. Licensed CC BY 4.0.",
+  "survey_id": "AQS-DEMO-04",
+  "navigation": "SYNTHETIC - see navigation.csv header",
+  "synthetic_navigation": true,
+  "synthetic_navigation_warning": "Coordinates produced from this scenario are fictional. They demonstrate the geolocation computation, not real object positions.",
+  "track": {
+    "start_lat": 12.92,
+    "start_lon": 80.34,
+    "heading_deg": 22.0,
+    "ping_spacing_m": 0.15,
+    "altitude_m": 11.0
+  }
+}

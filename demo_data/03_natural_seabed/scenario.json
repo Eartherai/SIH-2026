@@ -1,0 +1,30 @@
+{
+  "scenario": "03_natural_seabed",
+  "title": "Natural seabed (false-positive challenge)",
+  "description": "Held-out frames containing NO annotated target: ripples, rock texture, nadir band and shadow only. Every hazard reported here is a false positive. This is the scenario PS 26057 actually cares about.",
+  "short_description": "No targets present. Every hit here is a false positive.",
+  "frame_count": 16,
+  "frames": [
+    "0001_2018.jpg",
+    "0002_2018.jpg",
+    "0002_2021.jpg",
+    "0003_2018.jpg",
+    "0004_2018.jpg",
+    "0004_2021.jpg",
+    "0005_2018.jpg",
+    "0005_2021.jpg",
+    "0006_2018.jpg",
+    "0006_2021.jpg",
+    "0007_2018.jpg",
+    "0008_2018.jpg",
+    "0009_2018.jpg",
+    "0010_2018.jpg",
+    "0011_2018.jpg",
+    "0012_2018.jpg"
+  ],
+  "source_dataset": "MILCO/NOMBO side-scan sonar (figshare 24574879)",
+  "license": "CC BY 4.0",
+  "attribution": "Imagery: Pessanha Santos, N. & Moura, R. (2024), 'Side-scan sonar imaging data of underwater vehicles for mine detection', Data in Brief 53:110132. figshare DOI 10.6084/m9.figshare.24574879. Licensed CC BY 4.0.",
+  "survey_id": "AQS-DEMO-03",
+  "navigation": "none - geolocation will report UNAVAILABLE"
+}
