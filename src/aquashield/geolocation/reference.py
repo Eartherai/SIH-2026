@@ -27,8 +27,12 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, asdict
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
+
+if TYPE_CHECKING:                      # avoids a circular import at runtime
+    from .nav import NavTable
 
 
 @dataclass

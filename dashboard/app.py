@@ -13,7 +13,6 @@ an offline fallback that needs no tiles at all.
 
 from __future__ import annotations
 
-import io
 import json
 import os
 import sys
@@ -403,7 +402,7 @@ with tabs[2]:
                 st.markdown(f"- **Priority** — {h.priority_score:.0f} ({h.priority_band})")
                 st.markdown(f"- **Observations** — {h.observation_count} "
                             f"({h.association_mode})")
-                st.markdown(f"- **Size** — " + (
+                st.markdown("- **Size** — " + (
                     f"{h.estimated_length_m} × {h.estimated_width_m} m"
                     if h.estimated_length_m else
                     f"{h.bbox_x1-h.bbox_x0:.0f} × {h.bbox_y1-h.bbox_y0:.0f} px "

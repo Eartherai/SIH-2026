@@ -1,0 +1,7 @@
+{
+  "preprocess_profile": "none",
+  "experiment_id": "E04-smallobj-tuned",
+  "data": "data/processed/milco_nombo_yolo/data.yaml",
+  "imgsz": 640,
+  "note": "Primary detector. Trained on RAW frames -- run inference with preprocess_profile=none."
+}

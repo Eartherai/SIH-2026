@@ -1,9 +1,7 @@
 """Geolocation, deduplication, priority, reports."""
 import csv
 import json
-import math
 
-import numpy as np
 import pytest
 
 from aquashield.geolocation import (NavigationReference, NoGeoReference,

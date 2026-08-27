@@ -1,5 +1,4 @@
 """SQLite storage and the REST API."""
-import json
 import sys
 from pathlib import Path
 

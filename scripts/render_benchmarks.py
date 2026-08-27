@@ -19,7 +19,7 @@ MISSING = "_Not yet measured. Run the command in section 9 to populate this tabl
 def load_jsonl(p: Path) -> list[dict]:
     if not p.exists():
         return []
-    return [json.loads(l) for l in p.read_text().splitlines() if l.strip()]
+    return [json.loads(line) for line in p.read_text().splitlines() if line.strip()]
 
 
 def load_json(p: Path):

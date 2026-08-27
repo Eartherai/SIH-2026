@@ -21,14 +21,13 @@ from __future__ import annotations
 import time
 import uuid
 from dataclasses import dataclass, field
-from pathlib import Path
 
 import cv2
 import numpy as np
 
-from .confidence.calibration import IdentityCalibrator, PlattCalibrator, band as conf_band
+from .confidence.calibration import IdentityCalibrator, band as conf_band
 from .confidence.features import extract as extract_features
-from .confidence.fp_filter import LearnedFPFilter, RuleBasedFilter
+from .confidence.fp_filter import RuleBasedFilter
 from .detection.detector import Detector
 from .detection.taxonomy import Taxonomy
 from .geolocation.reference import NoGeoReference
