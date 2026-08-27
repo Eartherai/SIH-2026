@@ -132,22 +132,30 @@ def main() -> None:
     print(f"test split: {len(pos)} frames with targets, {len(neg)} empty\n")
 
     n = args.per_scenario
-    clear = sorted(pos, key=lambda s: -(s["contrast"] * math.sqrt(s["area"] + 1e-9)))[:n]
-    hard = sorted(pos, key=lambda s: (s["contrast"] * math.sqrt(s["area"] + 1e-9)))[:n]
+    # Difficulty is ranked by ANNOTATED TARGET SIZE -- a property of the data, not
+    # of our model. Ranking by anything the detector produces would be
+    # cherry-picking; ranking by a contrast heuristic (our first attempt) turned
+    # out to be a poor proxy, since the "hard" set scored higher recall than the
+    # "clear" set. Target area is objective and matches how an analyst would
+    # describe difficulty: small targets are hard to see, large ones are not.
+    clear = sorted(pos, key=lambda s: -s["area"])[:n]
+    hard = sorted(pos, key=lambda s: s["area"])[:n]
 
     write_scenario(
-        "01_clear_targets", "Clear man-made targets",
-        "Held-out frames whose annotated targets are comparatively large and "
-        "high-contrast. The baseline case.",
-        "Large, high-contrast targets on held-out surveys.",
+        "01_clear_targets", "Large man-made targets",
+        "Held-out frames carrying the LARGEST annotated targets in the test "
+        "surveys. Selected purely by annotated target area -- a property of the "
+        "data, never of our model's output. The baseline case.",
+        "Largest annotated targets on held-out surveys.",
         [s["path"] for s in clear])
 
     write_scenario(
-        "02_hard_targets", "Low-contrast / small targets",
-        "Held-out frames whose annotated targets are small and poorly separated "
-        "from the seabed. Expect lower confidence and some misses - this scenario "
-        "exists to show the failure mode honestly, not to hide it.",
-        "Small, low-contrast targets. Expect misses.",
+        "02_hard_targets", "Smallest targets",
+        "Held-out frames carrying the SMALLEST annotated targets in the test "
+        "surveys, again selected purely by annotated area. Expect lower "
+        "confidence and misses -- this scenario exists to show the failure mode "
+        "honestly, not to hide it.",
+        "Smallest annotated targets. Expect misses.",
         [s["path"] for s in hard])
 
     write_scenario(

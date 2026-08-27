@@ -1,18 +1,18 @@
 {
   "scenario": "02_hard_targets",
-  "title": "Low-contrast / small targets",
-  "description": "Held-out frames whose annotated targets are small and poorly separated from the seabed. Expect lower confidence and some misses - this scenario exists to show the failure mode honestly, not to hide it.",
-  "short_description": "Small, low-contrast targets. Expect misses.",
+  "title": "Smallest targets",
+  "description": "Held-out frames carrying the SMALLEST annotated targets in the test surveys, again selected purely by annotated area. Expect lower confidence and misses -- this scenario exists to show the failure mode honestly, not to hide it.",
+  "short_description": "Smallest annotated targets. Expect misses.",
   "frame_count": 8,
   "frames": [
-    "0412_2018.jpg",
     "0437_2018.jpg",
-    "0451_2018.jpg",
-    "0363_2018.jpg",
-    "0445_2018.jpg",
-    "0443_2018.jpg",
-    "0442_2018.jpg",
-    "0510_2018.jpg"
+    "0436_2018.jpg",
+    "0337_2018.jpg",
+    "0510_2018.jpg",
+    "0362_2018.jpg",
+    "0413_2018.jpg",
+    "0412_2018.jpg",
+    "0268_2018.jpg"
   ],
   "source_dataset": "MILCO/NOMBO side-scan sonar (figshare 24574879)",
   "license": "CC BY 4.0",

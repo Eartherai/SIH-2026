@@ -42,6 +42,7 @@ Full records in `experiments/registry.jsonl`.
 |---|---|---|---|---|---|---|
 | `E03-baseline-yolo11n` | imgsz 640, lr0 0.005, mosaic 1.0, scale 0.5 | 28* | **0.1011** | 0.0390 | 0.1668 | 0.1514 |
 | `E04-smallobj-tuned` | imgsz 640, lr0 0.002, mosaic 0.3, scale 0.25 | 64* | **0.1163** | 0.0396 | 0.3444 | 0.1639 |
+| `E05-finetune-nomosaic` | imgsz 640, lr0 0.0005, mosaic 0.0, scale 0.2 | 18* | **0.1249** | 0.0408 | 0.3017 | 0.1708 |
 
 \* stopped early by the operator; see `notes` in `experiments/registry.jsonl`.
 
@@ -49,16 +50,42 @@ Per-class mAP50 and the full hyperparameters for every run are in the registry. 
 
 ---
 
-## 3. Train/inference consistency — a design flaw we found and fixed
+## 3. Train/inference consistency — a defect we found and fixed
 
-Our first ablation compared a detector **trained on raw frames** while applying
-preprocessing **only at inference**. Precision collapsed from 0.158 to 0.000 on a
-120-frame subset.
+Our first ablation applied preprocessing **only at inference** to a detector
+**trained on raw frames**. Measured across all 612 held-out test frames at
+detector confidence 0.05:
 
-The cause is not that preprocessing is useless. It is that preprocessing shifts
-the input distribution, and a model trained on raw frames has never seen that
-distribution. **If a preprocessing chain is worth having, the detector must be
-trained on its output.**
+| Inference input | P | R | F1 | TP | FP | FA-frames (of 473) |
+|---|---|---|---|---|---|---|
+| `none` (**matched**) | 0.1414 | 0.1466 | **0.1440** | 28 | 170 | 80 |
+| `minimal` | 0.1157 | 0.0733 | 0.0897 | 14 | 107 | 49 |
+| `standard` (mismatched) | 0.0081 | 0.0209 | **0.0117** | 4 | 488 | 186 |
+| `aggressive` (mismatched) | 0.0045 | 0.0157 | 0.0070 | 3 | 660 | 252 |
+
+**A 12× F1 degradation, and more than double the false alarms.** The cause is not
+that preprocessing is useless — it is that preprocessing shifts the input
+distribution, and a model trained on raw frames has never seen it. **If a
+preprocessing chain is worth having, the detector must be TRAINED on its output.**
+
+This defect was in our own pipeline default. Three changes followed:
+
+1. `PipelineConfig.preprocess_profile` now defaults to `"none"`, with a test
+   guarding it against a well-meaning restoration.
+2. The profile is now a property of the **checkpoint**, recorded in a
+   `<weights>.meta.json` sidecar by `scripts/train.py` and selected automatically
+   at inference. The dashboard warns if you override it.
+3. `scripts/prepare_preprocessed.py` materialises a preprocessed dataset so the
+   comparison can be *matched*. It refuses geometry-changing profiles
+   (`water_column_mode="split"`, slant-range correction) because those would
+   invalidate the copied labels.
+
+**How we noticed.** Not from the aggregate metrics — from the *learned filter's
+weights*. An early fit gave `shadow_ratio` a large negative weight, contradicting
+sonar physics. That was a symptom, not a finding. With the mismatch fixed,
+`shadow_ratio` is +0.15 and `shadow_side_consistent` is +0.32, both positive and
+consistent with the physics. An inspectable verification stage turned out to be a
+diagnostic instrument.
 
 `scripts/prepare_preprocessed.py` therefore materialises a preprocessed copy of
 the dataset so the comparison can be *matched*. It refuses to run with any
@@ -73,8 +100,14 @@ _Not yet measured. Run the command in section 9 to populate this table._
 
 ## 4. Pipeline ablation — held-out test surveys
 
-Each row adds one stage. `FA-frames` = target-free frames that produced at least
-one alarm, out of 473.
+Each row adds one stage to the row above. `FA-frames` = target-free frames that
+produced at least one alarm, out of 473.
+
+**Row X is a negative control, not a result about preprocessing.** The detector
+was trained on raw frames, so "no preprocessing" is the *matched* configuration
+and the correct baseline. Row X shows what a train/inference preprocessing
+mismatch costs. The question "does preprocessing help?" is answered by the
+matched 2×2 in section 3, not by row X.
 
 <!-- BENCHMARK:ABLATION -->
 

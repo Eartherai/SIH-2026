@@ -1,18 +1,18 @@
 {
   "scenario": "01_clear_targets",
-  "title": "Clear man-made targets",
-  "description": "Held-out frames whose annotated targets are comparatively large and high-contrast. The baseline case.",
-  "short_description": "Large, high-contrast targets on held-out surveys.",
+  "title": "Large man-made targets",
+  "description": "Held-out frames carrying the LARGEST annotated targets in the test surveys. Selected purely by annotated target area -- a property of the data, never of our model's output. The baseline case.",
+  "short_description": "Largest annotated targets on held-out surveys.",
   "frame_count": 8,
   "frames": [
-    "0366_2018.jpg",
     "0462_2018.jpg",
-    "0285_2018.jpg",
-    "0458_2018.jpg",
-    "0460_2018.jpg",
-    "0286_2018.jpg",
     "0365_2018.jpg",
-    "0454_2018.jpg"
+    "0366_2018.jpg",
+    "0458_2018.jpg",
+    "0456_2018.jpg",
+    "0460_2018.jpg",
+    "0454_2018.jpg",
+    "0285_2018.jpg"
   ],
   "source_dataset": "MILCO/NOMBO side-scan sonar (figshare 24574879)",
   "license": "CC BY 4.0",

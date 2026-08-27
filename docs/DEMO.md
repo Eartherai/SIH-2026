@@ -38,12 +38,19 @@ All imagery comes from the **held-out test surveys** (2018, 2021). Nothing in th
 demo was seen during training.
 
 ### 1 · `01_clear_targets` — the baseline case
-Large, high-contrast annotated targets. Shows the pipeline working.
+The frames carrying the **largest annotated targets** in the test surveys
+(median ~3,450 px²). Shows the pipeline working.
 
 ### 2 · `02_hard_targets` — the failure mode, on purpose
-Small, low-contrast targets. Expect lower confidence and misses. This scenario
-exists so the demo cannot be accused of showing only easy frames. When a judge
-asks "what happens when it fails?", open this one.
+The frames carrying the **smallest annotated targets** (median ~280 px²). Expect
+lower confidence and misses. This scenario exists so the demo cannot be accused
+of showing only easy frames. When a judge asks "what happens when it fails?",
+open this one.
+
+> **Both sets are selected purely by annotated target area** — a property of the
+> data, never of our model's output. Ranking demo frames by anything the detector
+> produces would be cherry-picking. (Our first attempt ranked by a contrast
+> heuristic; it was a poor proxy, so we replaced it with target size.)
 
 ### 3 · `03_natural_seabed` — **the scenario that matters**
 Frames with **no annotated target at all**: ripples, rock texture, nadir band,
@@ -94,6 +101,7 @@ positional uncertainty drawn to scale on the map, spatial deduplication
 
 | Symptom | Fix |
 |---|---|
+| Sidebar warns "profile does not match this checkpoint" | Set the preprocessing profile back to the one the checkpoint was trained on. A mismatch cost a 12× F1 drop when we measured it (`docs/BENCHMARKS.md` §3). |
 | "No model checkpoint found" | `python scripts/train.py --exp-id E01 --epochs 150`, or drop a `.pt` into `models/` |
 | Map blank / slow | `export AQS_OFFLINE_MAP=1` |
 | Dashboard slow on first frame | First MPS call compiles kernels (~3 s). Process once before the demo starts. |

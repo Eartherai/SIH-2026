@@ -111,26 +111,35 @@ def main() -> None:
 
     none_pp = PROFILES["none"]
     std_pp = PROFILES["standard"]
-    wc_pp = PreprocessConfig(water_column_removal=True, water_column_mode="inpaint")
 
+    # Variants are ordered so each row adds ONE stage to the row above.
+    #
+    # The detector used here was trained on RAW frames, so "no preprocessing" is
+    # the MATCHED configuration and is the correct baseline. Row X is included
+    # deliberately as a negative control: it shows what applying a preprocessing
+    # chain the detector was never trained on costs. Do not read row X as
+    # "preprocessing is useless" -- see scripts/ablate_preprocessing.py for the
+    # matched comparison that actually answers that question.
     variants = [
-        ("A_detector_only_no_preprocess", dict(pp_cfg=none_pp, fp_filter=None,
-                                               calibrator=None, use_fp=False, use_tiling=True)),
-        ("B_plus_preprocessing", dict(pp_cfg=std_pp, fp_filter=None, calibrator=None,
-                                      use_fp=False, use_tiling=True)),
-        ("C_plus_water_column_removal", dict(pp_cfg=wc_pp, fp_filter=None, calibrator=None,
-                                             use_fp=False, use_tiling=True)),
-        ("D_plus_rule_based_fp_filter", dict(pp_cfg=wc_pp, fp_filter=RuleBasedFilter(),
+        ("A_detector_only", dict(pp_cfg=none_pp, fp_filter=None, calibrator=None,
+                                 use_fp=False, use_tiling=True)),
+        ("B_no_tiling_control", dict(pp_cfg=none_pp, fp_filter=None, calibrator=None,
+                                     use_fp=False, use_tiling=False)),
+        ("C_plus_rule_based_fp_filter", dict(pp_cfg=none_pp, fp_filter=RuleBasedFilter(),
                                              calibrator=None, use_fp=True, use_tiling=True)),
     ]
     if has_learned:
-        variants.append(("E_plus_learned_fp_filter",
-                         dict(pp_cfg=wc_pp, fp_filter=learned, calibrator=None,
+        variants.append(("D_plus_learned_fp_filter",
+                         dict(pp_cfg=none_pp, fp_filter=learned, calibrator=None,
                               use_fp=True, use_tiling=True)))
     if has_learned and has_cal:
-        variants.append(("F_full_pipeline_calibrated",
-                         dict(pp_cfg=wc_pp, fp_filter=learned, calibrator=cal,
+        variants.append(("E_full_pipeline_calibrated",
+                         dict(pp_cfg=none_pp, fp_filter=learned, calibrator=cal,
                               use_fp=True, use_tiling=True)))
+    variants.append(("X_mismatched_preprocessing_control",
+                     dict(pp_cfg=std_pp, fp_filter=(learned if has_learned else None),
+                          calibrator=(cal if has_cal else None),
+                          use_fp=has_learned, use_tiling=True)))
 
     rows = []
     for name, kw in variants:
@@ -145,7 +154,13 @@ def main() -> None:
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     payload = {
-        "tag": args.tag, "weights": args.weights, "split": args.split,
+        "tag": args.tag,
+        "variant_note": (
+            "The detector was trained on RAW frames, so 'no preprocessing' is the "
+            "MATCHED configuration and the correct baseline. Row X is a negative "
+            "control showing the cost of a train/inference preprocessing mismatch; "
+            "it is NOT evidence that preprocessing is useless. See "
+            "scripts/ablate_preprocessing.py for the matched 2x2."), "weights": args.weights, "split": args.split,
         "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "detector_conf": args.conf, "match_iou_threshold": args.iou_thr,
         "device": det.device,
