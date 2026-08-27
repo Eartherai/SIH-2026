@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aqua-shield"
+version = "0.1.0"
+description = "Acoustic Intelligence for Underwater Anomaly, Debris & Marine-Hazard Localization - automated detection, verification, localization and reporting of man-made anomalies in side-scan sonar imagery"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+keywords = ["side-scan-sonar", "marine-debris", "ghost-nets", "object-detection",
+            "underwater", "geospatial", "disaster-management"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Image Recognition",
+  "Topic :: Scientific/Engineering :: GIS",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: POSIX :: Linux",
+]
+
+# NOTE: the default detector backend (ultralytics) is AGPL-3.0-or-later, so the
+# COMBINED work is AGPL even though this project's own code is MIT.
+# See LEGAL_AND_LICENSES.md.
+dependencies = [
+  "numpy>=1.26,<2.3", "scipy>=1.13", "pandas>=2.2", "pillow>=10.3",
+  "opencv-python-headless>=4.10", "scikit-image>=0.24", "scikit-learn>=1.5",
+  "torch>=2.4", "torchvision>=0.19",
+  "ultralytics>=8.3,<8.4",
+  "pyproj>=3.6", "tifffile>=2024.7", "shapely>=2.0",
+  "pyyaml>=6.0", "tqdm>=4.66", "requests>=2.32",
+]
+
+[project.optional-dependencies]
+dashboard = ["streamlit>=1.38", "folium>=0.17", "streamlit-folium>=0.22", "plotly>=5.23"]
+api = ["fastapi>=0.115", "uvicorn>=0.30", "python-multipart>=0.0.9", "pydantic>=2.8"]
+edge = ["onnx>=1.12,<2.0", "onnxslim>=0.1.71", "onnxruntime>=1.19"]
+dev = ["pytest>=8.3"]
+
+[project.scripts]
+aqua-shield-env = "aquashield.device:environment_report"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
