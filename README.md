@@ -209,7 +209,7 @@ aqua-shield/
 ├── dashboard/app.py                Streamlit operator UI
 ├── scripts/                        download · prepare · train · fit · evaluate ·
 │                                   benchmark · robustness · export_edge · demo data
-├── tests/                          90+ tests incl. end-to-end + headless dashboard
+├── tests/                          108 tests incl. end-to-end + headless dashboard
 ├── data/ · demo_data/ · models/ · experiments/ · outputs/
 ├── research/                       sources · datasets · prior art · model selection
 └── docs/                           architecture · pipelines · geolocation ·

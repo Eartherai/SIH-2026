@@ -267,7 +267,7 @@ provenance — model, device, preprocessing profile, filter and calibrator.
 
 **37. How do I know you didn't fake the demo?**
 *20s:* Every demo frame comes from the held-out test surveys. The dashboard
-refuses to start without a real checkpoint. There are 90+ tests, including one
+refuses to start without a real checkpoint. There are 108 tests, including one
 that runs the whole dashboard headlessly and one that asserts a repeated run gives
 identical results.
 
