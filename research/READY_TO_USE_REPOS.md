@@ -80,3 +80,30 @@ Review was limited to public READMEs, file listings, and licence metadata via
 the GitHub API — the same due-diligence process applied to every other
 external reference in this project (`research/prior_art.md`,
 `research/external_architectures.md`).
+
+## Update (2026-08-28, later same day): AI4Shipwrecks access attempted
+
+Following the crab-pot dataset's access being granted (§ below), we attempted
+to also obtain **AI4Shipwrecks** (CC BY 4.0, University of Michigan Deep
+Blue Data, DOI `10.7302/dmf4-x492`, 1.13 GB `AI4Shipwrecks.zip`) — confirmed
+via the live Deep Blue page (license, file listing, size all verified
+directly, not from memory).
+
+**Blocked, and correctly so — this is not a gate we should try to bypass.**
+The Deep Blue download endpoint returns `cf-mitigated: challenge`
+(Cloudflare bot-mitigation requiring an interactive JS challenge); this held
+even through a real rendered-browser session, whose own sandbox blocks
+binary downloads regardless. This is a legitimate anti-automation control,
+not an access-request gate like the crab-pot or TiHAN datasets — it is not
+appropriate to work around it, only to note that a human downloading it
+through an ordinary browser would succeed where automation cannot.
+
+**A third-party Kaggle mirror exists** (`doanduchieu/ai4shipwrecks`, 2.44 GB,
+labelled MIT by the uploader) but scores a **0.25/1.0 Kaggle usability
+rating**, has no description, and shows no visible attribution to the
+original CC BY 4.0 authors (Sheppard, Sethuraman, Bagoren, Pinnow, Anderson,
+Havens, Skinner). **Not used or recommended** — low provenance confidence,
+and CC BY 4.0 requires attribution the mirror does not appear to carry. If
+this dataset is wanted for future work, the correct path is a human
+downloading directly from Deep Blue (`https://doi.org/10.7302/dmf4-x492`)
+via an ordinary browser, not via this mirror or further automation attempts.

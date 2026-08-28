@@ -1,0 +1,30 @@
+{
+  "dataset": "sss_crab_pot",
+  "source": "PINGEcosystem/sss-crab-pot-detection-ds",
+  "license": "CC BY-SA 4.0 (verified from repo card 2026-08-28)",
+  "split_strategy": "by RECORDING ID (filename prefix), not by image",
+  "class_names": [
+    "Crab-Pot",
+    "Maybe-Crab-Pot"
+  ],
+  "splits": {
+    "train": {
+      "recordings": 0,
+      "images": 0,
+      "positive_images": 0,
+      "objects": 0
+    },
+    "val": {
+      "recordings": 0,
+      "images": 0,
+      "positive_images": 0,
+      "objects": 0
+    },
+    "test": {
+      "recordings": 1,
+      "images": 0,
+      "positive_images": 0,
+      "objects": 0
+    }
+  }
+}

@@ -223,3 +223,29 @@ class TestCrabPotSplitLogic:
         assert a == b == "Rec09"
         assert c == "Rec14"
         assert a != c
+
+    def test_prepare_script_does_not_demand_a_token_when_data_already_exists(self, tmp_path, monkeypatch):
+        """Regression test: an earlier version of prepare_crab_pot.py checked for
+        HF_TOKEN unconditionally, even when the dataset was already downloaded --
+        forcing an unnecessary credential requirement on every re-run. The token
+        should only be required on the code path that actually needs to call the
+        HuggingFace API."""
+        import subprocess
+        import sys
+        from pathlib import Path
+
+        raw = tmp_path / "raw"
+        (raw / "train").mkdir(parents=True)
+        (raw / "train" / "metadata.jsonl").write_text(
+            '{"file_name": "a.jpg", "objects": {"bbox": [], "category": []}}\n')
+        # no valid/test metadata -- fine, the loop just skips missing splits
+
+        monkeypatch.delenv("HF_TOKEN", raising=False)
+        root = Path(__file__).resolve().parents[1]
+        result = subprocess.run(
+            [sys.executable, str(root / "scripts" / "prepare_crab_pot.py"),
+             "--raw", str(raw), "--out", str(tmp_path / "out")],
+            cwd=root, capture_output=True, text=True, timeout=30)
+        assert "Set HF_TOKEN" not in result.stdout + result.stderr, (
+            "prepare_crab_pot.py demanded a token even though the data was "
+            f"already present.\nstdout: {result.stdout}\nstderr: {result.stderr}")

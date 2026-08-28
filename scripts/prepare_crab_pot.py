@@ -67,13 +67,12 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
 
-    token = os.environ.get("HF_TOKEN")
-    if not token:
-        raise SystemExit("Set HF_TOKEN in your environment first (export HF_TOKEN=hf_...). "
-                         "Never pass it on the command line or hardcode it in a file.")
-
     raw = Path(args.raw)
     if not (raw / "train" / "metadata.jsonl").exists():
+        token = os.environ.get("HF_TOKEN")
+        if not token:
+            raise SystemExit("Set HF_TOKEN in your environment first (export HF_TOKEN=hf_...). "
+                             "Never pass it on the command line or hardcode it in a file.")
         print(f"downloading {REPO} to {raw} ...")
         download(raw, token)
     else:
