@@ -102,10 +102,13 @@ pipeline*; speckle-aug training solves a robustness gap that a **Nov-2025 publis
 paper still lists as future work**. Six external references cross-checked (thesis,
 TR-YOLOv5s, MSF-DETR, BHP-UNet, LEF-RT-DETR + 4 production systems) — none beat this
 architecture's shape; all confirm the edge-cost discipline.
-[`research/FINAL_ARCHITECTURE.md`](research/FINAL_ARCHITECTURE.md) is the full synthesis
-and the winning-approach argument. Also: [`thesis_discrepancies.md`](research/thesis_discrepancies.md),
-[`external_architectures.md`](research/external_architectures.md),
-[`ARCHITECTURE_DECISION.md`](research/ARCHITECTURE_DECISION.md).
+
+**[`docs/FULL_ARCHITECTURE_ANALYSIS.md`](docs/FULL_ARCHITECTURE_ANALYSIS.md)** is the
+complete component-by-component record — every candidate tested, every measurement,
+why each was kept/rejected/deferred, and the full comparison against all six papers
+and four production systems. `research/FINAL_ARCHITECTURE.md` is the shorter
+winning-approach argument; `thesis_discrepancies.md`, `external_architectures.md`,
+`ARCHITECTURE_DECISION.md` hold the deeper per-topic notes.
 
 ![Failure gallery](docs/images/failure_gallery.png)
 
