@@ -153,16 +153,30 @@ area with hand-chosen weights. It is useful for warning an operator and as a sof
 input to priority. It is **not** a calibrated measure of anything physical, and
 it is labelled as a heuristic in the code.
 
-## 13. Large targets are missed entirely (recall 0.000 on >2500 px²)
+## 13. Large targets are missed entirely (recall 0.000 on >2500 px²) — investigated and re-diagnosed
 
 Counter to the usual "small targets are hard" framing, our raw model detects the
 *smallest* targets best (recall 0.193 at <300 px²) and **every large target**
-(17 objects >2500 px²) is **missed** (`docs/BENCHMARKS.md` §10.3). The cause is
-almost certainly our own `scale=0.25` augmentation plus tiling, which bias the
-model toward small objects, compounded by the large test targets being unlike
-anything in the training surveys. The fix is balancing the scale-augmentation and
-the cross-survey size distribution — not raising inference resolution (which we
-measured makes things worse). Not yet fixed.
+(17 objects >2500 px²) is **missed** (`docs/BENCHMARKS.md` §10.3).
+
+Phase 2 speculated this was mainly our `scale=0.25` augmentation biasing the
+model toward small objects. **We checked properly rather than leave that
+speculation standing** (`experiments/large_target_gap_analysis.json`): using
+area-as-fraction-of-frame (`area_frac`, needed because MILCO/NOMBO mixes 416px
+and 1024px images), the largest **training** object occupies **1.7%** of its
+frame; the largest **test** object occupies **9.3%** — a **5.5× gap**, driven
+chiefly by two extreme frames (0365_2018, 0366_2018). Standard scale-jitter
+augmentation (E04's factor range ≈0.75–1.25×) cannot synthesize a 5×+
+linear-dimension jump from typical small-target training crops — it physically
+cannot manufacture training exposure to a size regime that doesn't exist in the
+source images.
+
+**Revised conclusion:** this is substantially a **training-data coverage gap**,
+not primarily a fixable hyperparameter. Augmentation tuning may help at the
+margin but will not close it. The real fix is more training data spanning the
+same size range as the test surveys, or synthetic paste-augmentation that
+deliberately inserts oversized target crops during training — neither
+attempted yet.
 
 ## 14. Priority weights are a product convention
 

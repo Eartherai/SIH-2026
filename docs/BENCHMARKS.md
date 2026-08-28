@@ -325,10 +325,17 @@ Measured on all 191 held-out objects (raw E04 model, IoU≥0.3):
 **A genuinely counter-intuitive result.** The thesis (and common wisdom) say small
 distant targets are the hard case. On *this* dataset with *this* model the opposite
 holds: the smallest targets are detected best and **every large target is missed**.
-The most likely cause is our own augmentation — training with `scale=0.25` and
-tiling biases the model hard toward small objects, and the handful of large test
-targets (17, in surveys 2018/2021) look unlike anything in the 2015/2010 training
-surveys. This is a real, documented limitation (`docs/LIMITATIONS.md`), and it says
-the fix is **not** "increase resolution" but "balance the scale augmentation and
-the size distribution across surveys."
+
+**Investigated properly, not left as a guess** (`experiments/large_target_gap_analysis.json`):
+normalising by area-as-fraction-of-frame (needed since MILCO/NOMBO mixes 416px and
+1024px images), the largest **training** object occupies **1.7%** of its frame; the
+largest **test** object occupies **9.3%** — a **5.5× gap**, driven chiefly by two
+extreme frames (0365_2018, 0366_2018). Standard scale-jitter augmentation (E04's
+factor range ≈0.75–1.25×) physically cannot synthesize a 5×+ linear-dimension jump
+from typical small-target training crops. **This is substantially a training-data
+coverage gap, not a fixable hyperparameter** — an earlier hypothesis blaming
+`scale=0.25` augmentation bias is superseded by this measurement. The real fix is
+more training data spanning the test surveys' size range, or paste-augmentation
+that deliberately inserts oversized crops; neither attempted yet
+(`docs/LIMITATIONS.md` §13).
 

@@ -1,0 +1,117 @@
+{
+  "note": "Cross-checks whether the 'large targets missed' finding (recall 0.000 >2500px2 on the raw E04 detector) is an augmentation artifact or a genuine training-data coverage gap. Uses area_frac (object area / image area) because MILCO/NOMBO mixes 416x416 and 1024x1024 images, so raw px^2 is not comparable across the dataset.",
+  "splits": {
+    "train": {
+      "n_objects": 447,
+      "area_frac_max": 0.01682,
+      "area_frac_median": 0.00154,
+      "top5_largest": [
+        {
+          "frame": "0067_2015",
+          "img_width": 1024,
+          "area_px2": 17632.0,
+          "area_frac": 0.01682
+        },
+        {
+          "frame": "0056_2015",
+          "img_width": 1024,
+          "area_px2": 17030.0,
+          "area_frac": 0.01624
+        },
+        {
+          "frame": "0057_2015",
+          "img_width": 416,
+          "area_px2": 2809.0,
+          "area_frac": 0.01623
+        },
+        {
+          "frame": "0049_2015",
+          "img_width": 1024,
+          "area_px2": 15264.0,
+          "area_frac": 0.01456
+        },
+        {
+          "frame": "0065_2015",
+          "img_width": 1024,
+          "area_px2": 15111.0,
+          "area_frac": 0.01441
+        }
+      ]
+    },
+    "val": {
+      "n_objects": 30,
+      "area_frac_max": 0.00135,
+      "area_frac_median": 0.00079,
+      "top5_largest": [
+        {
+          "frame": "0002_2017",
+          "img_width": 416,
+          "area_px2": 234.0,
+          "area_frac": 0.00135
+        },
+        {
+          "frame": "0005_2017",
+          "img_width": 416,
+          "area_px2": 234.0,
+          "area_frac": 0.00135
+        },
+        {
+          "frame": "0003_2017",
+          "img_width": 1024,
+          "area_px2": 1392.0,
+          "area_frac": 0.00133
+        },
+        {
+          "frame": "0004_2017",
+          "img_width": 1024,
+          "area_px2": 1392.0,
+          "area_frac": 0.00133
+        },
+        {
+          "frame": "0014_2017",
+          "img_width": 416,
+          "area_px2": 211.5,
+          "area_frac": 0.00122
+        }
+      ]
+    },
+    "test": {
+      "n_objects": 191,
+      "area_frac_max": 0.09298,
+      "area_frac_median": 0.00109,
+      "top5_largest": [
+        {
+          "frame": "0365_2018",
+          "img_width": 416,
+          "area_px2": 16090.5,
+          "area_frac": 0.09298
+        },
+        {
+          "frame": "0366_2018",
+          "img_width": 1024,
+          "area_px2": 97125.0,
+          "area_frac": 0.09263
+        },
+        {
+          "frame": "0462_2018",
+          "img_width": 416,
+          "area_px2": 7770.0,
+          "area_frac": 0.0449
+        },
+        {
+          "frame": "0460_2018",
+          "img_width": 416,
+          "area_px2": 6152.5,
+          "area_frac": 0.03555
+        },
+        {
+          "frame": "0458_2018",
+          "img_width": 416,
+          "area_px2": 4206.5,
+          "area_frac": 0.02431
+        }
+      ]
+    }
+  },
+  "conclusion": "Largest test-set object occupies 9.3% of its frame; largest training-set object occupies only 1.7% -- a 5.5x gap. The 'recall 0.000 on large targets' finding is dominated by objects genuinely out of the size distribution the model was trained on (chiefly frames 0365_2018 and 0366_2018, area_frac ~9.3%), not primarily a fixable augmentation-tuning artifact. Scale augmentation (E04's factor range ~0.75-1.25x) cannot synthesize a 5x+ linear-dimension jump from typical training crops. This corrects an earlier (Phase 2) hypothesis that attributed the gap mainly to scale-augmentation bias."
+}

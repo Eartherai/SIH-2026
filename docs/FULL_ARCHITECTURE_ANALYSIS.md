@@ -146,10 +146,13 @@ detector backbone), not pixel reconstruction.
 **Finding, and it inverts the expected story:** the thesis and common sonar
 wisdom both assume small distant targets are the hard case. On this dataset,
 with this model, **every large target is missed and the smallest are found
-best** — almost certainly our own `scale=0.25` augmentation combined with the
-handful of large test-survey targets looking unlike anything in the training
-surveys. This is a diagnosed, unresolved limitation (`docs/LIMITATIONS.md`
-§13), not a design choice.
+best.** Investigated with area-as-fraction-of-frame (`experiments/large_target_gap_analysis.json`):
+the largest training object is **1.7%** of its frame; the largest test object
+is **9.3%** — a **5.5× gap** that ordinary scale-jitter augmentation cannot
+synthesize from small-target crops. **This is substantially a training-data
+coverage gap, not a fixable hyperparameter** — supersedes an earlier
+augmentation-bias hypothesis. Diagnosed, unresolved limitation
+(`docs/LIMITATIONS.md` §13), not a design choice.
 
 ### 2.8 Speckle robustness — a weakness, addressed
 

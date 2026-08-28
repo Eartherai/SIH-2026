@@ -382,8 +382,10 @@ is proven; the trade isn't free yet.
 
 **52. Your biggest failure case?**
 *20s:* Large targets. Recall is 0.000 on targets over 2500 px² — we miss every big
-one, while detecting the smallest best. It's our own scale-augmentation bias plus
-large test targets being unlike the training surveys. It's in the failure gallery
+one, while detecting the smallest best. We checked why properly rather than guess:
+the largest test object is 9.3% of its frame, the largest training object only
+1.7% — a 5.5× gap no augmentation can synthesize from small crops. It's a
+training-data coverage gap, not a hyperparameter bug. It's in the failure gallery
 and the limitations, front and centre.
 
 **53. What did Phase 2 actually contribute if the architecture didn't change?**

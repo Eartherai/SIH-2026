@@ -120,7 +120,7 @@ The differentiator is not a bigger model. It is:
 |---|---|---|---|
 | 1 | Ghost-gear training on crab-pot data | **one manual click** (`HF gate`) | ~1 day once unblocked: prep→train→fit→evaluate, pipeline already built |
 | 2 | Longer speckle-aug run, promote to primary | none — compute only | few hours on M5 |
-| 3 | Fix large-target recall | none — retraining discipline | few hours |
+| 3 | Fix large-target recall | **re-diagnosed as a 5.5× data-coverage gap, not an augmentation bug** — needs more large-object training data or paste-augmentation | half-day+, data-dependent |
 | 4 | Indian-domain validation (TiHAN/IITH) | one manual form | prep pending access |
 | 5 | Embedding-based anomaly (PaDiM/PatchCore) to replace the failed AE | none | ~1 day, new subsystem |
 | 6 | Train the torchvision backend → licence-clean (non-AGPL) path | none | ~1 day |
