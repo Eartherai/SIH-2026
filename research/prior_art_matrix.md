@@ -23,3 +23,7 @@ Assessed honestly against the above:
 | Confidence vs **priority** as separate quantities | **Product contribution**, not research novelty. |
 | Survey-year-level splitting + frame-level false-alarm rate as the headline metric | **Methodological contribution** — it makes the numbers comparable to operational reality. |
 | Edge/onboard deployment | **Not demonstrated.** Runs locally on Apple Silicon; no Jetson or AUV test. Claimed only as an architecture property. |
+
+## Additional references (Phase 2b)
+
+Five more architectures and four real-world operational systems (TR-YOLOv5s, MSF-DETR, BHP-UNet, GhostNetZero, SeaClear, SeeByte, NOAA) are analysed in **`external_architectures.md`**, with the same what-they-do / what-we-already-do / new-to-try / verdict framing. Headline: SeeByte's defence pipeline is identical to ours; MSF-DETR (2025) flags sonar-specific augmentation as a missing differentiator that we already have (E08); every heavy model is edge-hostile vs our 6.3 GFLOPs.

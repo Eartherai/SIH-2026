@@ -36,6 +36,8 @@ question throughout: *"What experiment proves this belongs here?"*
 | Licence-clean torchvision detector (trained) | Interface implemented + tested; training is a separate long run. Top remaining task for a government-clean path. |
 | UATD auxiliary pretraining A/B | Plausible but low expected value (our bottleneck is SSS data, not init); measure before claiming. |
 | Temporal tracker (DeepSORT-style) | Spatial/temporal dedup already covers the operational need; upgrade only if a continuous-survey use case demands tracks. |
+| Cross-track downsampling (TR-YOLOv5s) | Genuinely SSS-aware (fixes anisotropic resolution), but geometry-changing → needs a matched retrain, and our preprocessing track shows resampling must be trained not applied at inference. Implement+evaluate as a matched experiment, not an inference knob. |
+| Segmentation head (BHP-UNet/SEAUNet style) + anti-noise blending | No SSS mask labels on our data; AI4Shipwrecks masks are large-target wrecks. Revisit if a masked SSS debris set is obtained. |
 
 ## FINAL PRODUCTION ARCHITECTURE
 

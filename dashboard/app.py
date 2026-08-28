@@ -87,6 +87,14 @@ st.sidebar.caption(f"v{__version__} · Detection → Verification → Localizati
 dev = select_device("auto")
 st.sidebar.success(f"Compute: **{dev.device.upper()}** · {dev.reason}")
 
+# Dual-tier view (SeaClear / SeeByte pattern): a full technical operator console
+# vs a clean executive/judge summary. Same data, two audiences.
+view_mode = st.sidebar.radio(
+    "View", ["🎛️ Operator (technical)", "📋 Executive summary"],
+    label_visibility="collapsed",
+    help="Operator = full technical console. Executive = clean decision summary.")
+EXEC = view_mode.startswith("📋")
+
 models = find_models()
 if not models:
     st.sidebar.error("No model checkpoint found.")
@@ -277,6 +285,74 @@ if s["unique_hazards"] == 0:
     st.success("**No confident detections found.** The processed frames contain no "
                "anomalies above the current thresholds. Lower the detector "
                "sensitivity in the sidebar to widen the search.")
+
+# ---------------------------------------------------------------------------
+# Executive / judge summary — clean decision view, hides technical internals
+# ---------------------------------------------------------------------------
+if EXEC:
+    calibrated = any(h.calibrated for h in res.hazards)
+    st.markdown(f"### Survey `{res.survey_id}` — decision summary")
+    e = st.columns(4)
+    e[0].metric("Unique hazards", s["unique_hazards"])
+    e[1].metric("High priority", s["high_priority_hazards"])
+    e[2].metric("Geolocated", s["geolocated_hazards"])
+    e[3].metric("Throughput", f"{s['mean_ms_per_frame']:.0f} ms/frame")
+
+    located = [h for h in res.hazards if h.latitude is not None]
+    if located:
+        df = pd.DataFrame([{"lat": h.latitude, "lon": h.longitude,
+                            "priority_band": h.priority_band,
+                            "priority": h.priority_score} for h in located])
+        if OFFLINE_MAP:
+            st.scatter_chart(df, x="lon", y="lat", color="priority_band", size="priority")
+        else:
+            try:
+                import folium
+                from streamlit_folium import st_folium
+                m = folium.Map(location=[df.lat.mean(), df.lon.mean()], zoom_start=15,
+                               tiles="OpenStreetMap")
+                colours = {"URGENT": "red", "HIGH": "orange", "ELEVATED": "blue",
+                           "ROUTINE": "green"}
+                for _, r in df.iterrows():
+                    folium.CircleMarker([r.lat, r.lon], radius=6,
+                                        color=colours.get(r.priority_band, "gray"),
+                                        fill=True, fill_opacity=0.9).add_to(m)
+                st_folium(m, height=380, width='stretch')
+            except Exception:                                     # noqa: BLE001
+                st.scatter_chart(df, x="lon", y="lat", color="priority_band")
+    else:
+        st.info("No geolocated hazards — supply navigation metadata to place hazards "
+                "on the map. (The system does not invent positions.)")
+
+    st.markdown("#### Top hazards by priority")
+    if res.hazards:
+        top = sorted(res.hazards, key=lambda h: -h.priority_score)[:10]
+        st.dataframe(pd.DataFrame([{
+            "Hazard": h.hazard_id, "Type": h.level2.replace("_", " "),
+            "Priority": f"{h.priority_score:.0f} ({h.priority_band})",
+            "Confidence": f"{h.confidence_pct:.0f}%" + ("" if h.calibrated else " (raw)"),
+            "Seen": h.observation_count,
+            "Position": (f"{h.latitude:.5f}, {h.longitude:.5f} ±{h.geoloc_uncertainty_m:.0f} m"
+                         if h.latitude is not None else "unavailable"),
+        } for h in top]), width='stretch', hide_index=True)
+    else:
+        st.success("No confident hazards detected in this survey.")
+
+    report = build_report(res.hazards, survey_id=res.survey_id,
+                          summary=res.summary, provenance=res.provenance)
+    d1, d2, d3 = st.columns(3)
+    d1.download_button("⬇️ JSON", json.dumps(report, indent=2, default=str),
+                       f"{res.survey_id}.json", "application/json", width='stretch')
+    d2.download_button("⬇️ CSV", csv_string(res.hazards),
+                       f"{res.survey_id}.csv", "text/csv", width='stretch')
+    gj = ROOT / "outputs" / f"{res.survey_id}.geojson"
+    write_geojson(res.hazards, gj)
+    d3.download_button("⬇️ GeoJSON", gj.read_text(),
+                       f"{res.survey_id}.geojson", "application/geo+json", width='stretch')
+    st.caption("Confidence is calibrated." if calibrated else
+               "Confidence values are raw detector scores (no calibration fitted) — "
+               "not probabilities. Switch to Operator view for full provenance.")
+    st.stop()
 
 tabs = st.tabs(["🖼️ Detections", "🗺️ Map", "📋 Hazard register", "🔬 Evidence & QC",
                 "⬇️ Export", "ℹ️ Provenance"])
