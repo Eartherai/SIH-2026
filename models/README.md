@@ -52,3 +52,14 @@ Note: `aquashield_speckle_robust.pt` is ~5.5 MB vs the primary's ~16 MB —
 Ultralytics saved this checkpoint in fp16 rather than fp32 (same 2.59M
 params; verified by loading and checking `dtype`). Not a different or
 smaller architecture.
+
+## Edge export, both checkpoints (measured)
+
+| Checkpoint | ONNX size | ONNX Runtime latency (CoreML EP) |
+|---|---|---|
+| `aquashield_primary.onnx` | 10.61 MB | 8.49 ms |
+| `aquashield_speckle_robust.onnx` | 10.61 MB | 4.79 ms |
+
+Both export cleanly and run under ONNX Runtime with the CoreML execution
+provider. Full records: `experiments/edge_export.json`,
+`experiments/edge_export_speckle_robust.json`.

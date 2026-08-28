@@ -28,3 +28,9 @@ adaptation · external testing · anomaly learning · evidence-only`
   SSS source).
 - Every dataset actually used records its provenance in every generated report's
   `provenance` block.
+
+## Addendum: NOAA hydrographic side-scan sonar (found via competitive survey, 2026-08-28)
+
+| Dataset | Sonar type | Origin | Role assigned | Why |
+|---|---|---|---|---|
+| NOAA H-series hydrographic surveys (e.g. H11833, H11251) | SSS | **US (public domain)** | future candidate, **not pursued** | Verified real via NOAA/NCEI's hydrographic data archive. US federal government data is public domain, legally clean. Raw geo-referenced mosaics only — not pre-annotated for debris; a labelling effort would be required. See `research/READY_TO_USE_REPOS.md`. |

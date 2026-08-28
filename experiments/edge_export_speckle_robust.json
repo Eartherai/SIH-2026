@@ -1,0 +1,33 @@
+{
+  "utc": "2026-08-28T15:22:15Z",
+  "host": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "machine": "arm64"
+  },
+  "source_weights": "models/aquashield_speckle_robust.pt",
+  "source_size_mb": 5.48,
+  "imgsz": 640,
+  "exports": {
+    "onnx": {
+      "path": "models/aquashield_speckle_robust.onnx",
+      "size_mb": 10.61,
+      "export_seconds": 0.6,
+      "benchmark": {
+        "providers": [
+          "CoreMLExecutionProvider",
+          "AzureExecutionProvider",
+          "CPUExecutionProvider"
+        ],
+        "input_shape": [
+          1,
+          3,
+          640,
+          640
+        ],
+        "mean_ms": 4.79,
+        "p50_ms": 4.79,
+        "p95_ms": 4.89
+      }
+    }
+  }
+}
