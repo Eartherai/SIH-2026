@@ -576,6 +576,19 @@ resolution — is deferred to a future matched retrain, not adopted untested.
 Full write-ups: `research/thesis_discrepancies.md`,
 `research/external_architectures.md`, `research/ARCHITECTURE_DECISION.md`.
 
+**Also searched directly (not just papers): existing ready-to-use GitHub
+repositories**, including several other teams' live SIH-26057 submissions
+pushed the same week. Two independently arrived at design principles central
+to this project — "never invent a coordinate" and "noise/false-positive
+suppression is the real problem" — without any shared code, which we read as
+stronger validation than a single benchmark number. Nothing found should
+replace this repository; no code was copied from any external source. Full
+survey: `research/READY_TO_USE_REPOS.md`.
+
+**A formal, academic-style justification of the entire system** — abstract,
+related work, methodology, results, limitations, references — is at
+`research/AQUA_SHIELD_PAPER.md`.
+
 ---
 
 ## 15. Why this architecture, and not another
