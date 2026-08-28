@@ -1,0 +1,14 @@
+Experiment,Dataset,Train_setup,Test_setup,mAP50,Recall,Precision,F1,False_alarms,Latency_ms,Keep,Notes
+E03-baseline-yolo11n,MILCO/NOMBO SSS,survey-level (2015+2010),held-out (2018+2021),0.1011,0.1514,0.1668,TBD,TBD,TBD,no,"baseline, superseded"
+E04-smallobj-tuned,MILCO/NOMBO SSS,survey-level (2015+2010),held-out (2018+2021),0.1163,0.1639,0.3444,TBD,TBD,TBD,YES,PRIMARY detector (raw)
+E05-finetune-nomosaic,MILCO/NOMBO SSS,survey-level (2015+2010),held-out (2018+2021),0.1249,0.1708,0.3017,TBD,TBD,TBD,no,no gain over E04
+E06-preprocessed-matched,MILCO/NOMBO SSS,survey-level (2015+2010),held-out (2018+2021),0.0318,0.1089,0.0769,TBD,TBD,TBD,no,"our preprocessing, matched — hurts SSS"
+E07-thesis5step-matched,MILCO/NOMBO SSS,survey-level (2015+2010),held-out (2018+2021),0.0429,0.1342,0.1592,TBD,TBD,TBD,no,"thesis 5-step, matched — hurts SSS (FLS gain doesn't transfer)"
+E08-speckle-aug,MILCO/NOMBO SSS,survey-level (2015+2010),held-out (2018+2021),0.0763,0.1415,0.1849,TBD,TBD,TBD,partial,"robustness win, clean-mAP trade; undertrained"
+ablation:A,MILCO/NOMBO SSS,E04 raw,held-out 612 frames,n/a,0.1099,0.2471,0.1522,37/473,50,baseline,pipeline stage ablation
+ablation:B,MILCO/NOMBO SSS,E04 raw,held-out 612 frames,n/a,0.1257,0.2526,0.1678,43/473,38,no,pipeline stage ablation
+ablation:C,MILCO/NOMBO SSS,E04 raw,held-out 612 frames,n/a,0.0628,0.3,0.1039,18/473,48,no,pipeline stage ablation
+ablation:D,MILCO/NOMBO SSS,E04 raw,held-out 612 frames,n/a,0.0995,0.322,0.152,25/473,49,YES,pipeline stage ablation
+ablation:E,MILCO/NOMBO SSS,E04 raw,held-out 612 frames,n/a,0.0995,0.322,0.152,25/473,72,baseline,pipeline stage ablation
+ablation:X,MILCO/NOMBO SSS,E04 raw,held-out 612 frames,n/a,0.0052,0.0102,0.0069,57/473,84,no,pipeline stage ablation
+anomaly-AE (p32),MILCO/NOMBO SSS,train-empty seabed patches,held-out frames/patches,n/a,n/a,n/a,n/a,TBD,TBD,no,"REJECTED: frame AUROC 0.472, patch AUROC 0.5355 (~chance)"

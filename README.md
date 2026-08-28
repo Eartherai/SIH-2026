@@ -137,6 +137,10 @@ dataset ships no navigation data. The demo's georeferenced scenario uses an
 explicitly **synthetic** track, labelled as such in the file, the metadata and the
 UI.
 
+![Failure gallery](docs/images/failure_gallery.png)
+
+*Real failure cases from held-out inference: large target missed, false positives on empty seabed, and speckle-induced collapse. Regenerate with `python scripts/make_failure_gallery.py`.*
+
 Full list: **`docs/LIMITATIONS.md`** — read it before believing anything else here.
 
 ---

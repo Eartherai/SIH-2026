@@ -1,0 +1,16 @@
+{
+  "utc": "2026-08-28T00:01:59Z",
+  "device": "mps",
+  "patch": 32,
+  "stride": 16,
+  "epochs": 30,
+  "train_normal_frames": 319,
+  "train_patches": 20000,
+  "frame_auc": 0.472,
+  "patch_auc": 0.5355,
+  "norm_mean": 0.0038303642068058252,
+  "norm_std": 0.002643871819600463,
+  "n_test_target_frames": 139,
+  "n_test_empty_frames": 473,
+  "note": "Autoencoder trained ONLY on normal-seabed patches from the TRAIN split. AUROC measured on held-out TEST. This is an UNKNOWN-anomaly score, independent of the supervised detector's class list."
+}

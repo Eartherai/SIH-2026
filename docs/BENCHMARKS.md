@@ -44,6 +44,8 @@ Full records in `experiments/registry.jsonl`.
 | `E04-smallobj-tuned` | imgsz 640, lr0 0.002, mosaic 0.3, scale 0.25 | 64* | **0.1163** | 0.0396 | 0.3444 | 0.1639 |
 | `E05-finetune-nomosaic` | imgsz 640, lr0 0.0005, mosaic 0.0, scale 0.2 | 18* | **0.1249** | 0.0408 | 0.3017 | 0.1708 |
 | `E06-preprocessed-matched` | imgsz 640, lr0 0.002, mosaic 0.3, scale 0.25 | 41* | **0.0318** | 0.0093 | 0.0769 | 0.1089 |
+| `E07-thesis5step-matched` | imgsz 640, lr0 0.002, mosaic 0.3, scale 0.25 | 80 | **0.0429** | 0.0158 | 0.1592 | 0.1342 |
+| `E08-speckle-aug` | imgsz 640, lr0 0.002, mosaic 0.3, scale 0.25 | 55 | **0.0763** | 0.0236 | 0.1849 | 0.1415 |
 
 \* stopped early by the operator; see `notes` in `experiments/registry.jsonl`.
 
@@ -255,3 +257,78 @@ python scripts/export_edge.py --weights runs/detect/**/weights/best.pt
 Training is seeded (`--seed 0`, `deterministic=True`), but MPS kernels are not
 bit-reproducible across PyTorch versions, so exact figures may shift slightly.
 Pipeline *inference* is deterministic and there is a test asserting it.
+
+---
+
+## 10. Phase 2 — thesis-informed experiments (all measured on held-out surveys)
+
+### 10.1 Does the thesis's 5-step preprocessing help on SSS? No.
+
+The thesis (Divyabarathi, 2025) reports its **5-step preprocessing** (TVG → Median
+→ HistEq → CLAHE → Morphology) lifting YOLOv8 mAP by +12.8 points. **That gain is
+on UATD, which is Forward-Looking Sonar** (`research/thesis_discrepancies.md`).
+We reproduced the *actual* 5-step pipeline as a preprocessing profile and trained
+**matched** (train+val+test+inference all preprocessed) on SSS:
+
+| Experiment | Preprocessing | mAP50 | mAP50-95 | Precision | Recall |
+|---|---|---|---|---|---|
+| E04 | raw | **0.1163** | 0.0396 | 0.3444 | 0.1639 |
+| E06 | our chain (WC-removal+Lee+gain+DR), matched | 0.0318 | 0.0093 | 0.0769 | 0.1089 |
+| **E07** | **thesis 5-step, matched** | 0.0429 | 0.0158 | 0.1592 | 0.1342 |
+
+**Conclusion:** the thesis's own preprocessing pipeline, applied faithfully and
+matched, also **underperforms raw on SSS** (0.043 vs 0.116). This is consistent
+with the modality argument: the +12.8-point gain is an FLS result and does not
+transfer to side-scan. Production stays raw (`preprocess_profile: none`).
+
+### 10.2 Speckle augmentation — the Phase-1 collapse, addressed
+
+Phase 1 found detection collapsed under added speckle. The fix for a distribution
+the detector never saw is to **train** on it (E08: train set = raw frames + their
+multiplicative-speckle copies at σ∈{0.25,0.5}; val/test kept clean). Robustness on
+the identical 120-frame subset:
+
+| Condition | E04 raw — F1 (recall) | E08 speckle-aug — F1 (recall) |
+|---|---|---|
+| clean baseline | 0.061 (0.036) | 0.236 (0.345) |
+| speckle σ=0.25 | **0.000 (0.000)** | **0.156 (0.143)** |
+| speckle σ=0.5 | 0.000 (0.000) | 0.071 (0.048) |
+| speckle σ=1.0 | 0.000 (0.000) | 0.000 (0.000) |
+| blur k=5 | 0.044 | 0.166 |
+| resolution ×0.5 | 0.022 | 0.153 |
+| ping dropout 15% | 0.000 | 0.179 |
+
+**At σ=0.25 the raw model retains 0% of its clean recall; the speckle-augmented
+model retains ~41%.** Augmentation converts total collapse into graceful
+degradation across every degradation mode.
+
+**Honest cost.** On the *full* 612-frame clean test, E08 (mAP50 0.076, P 0.185,
+R 0.142) sits **below** E04 (0.116 / 0.344 / 0.164): the augmented model detects
+about as many targets but ranks them worse, and it was stopped early (55 epochs on
+3× data — undertrained). So augmentation is the **right mechanism** for the speckle
+weakness but the trade is **not yet free**; a longer, tuned run is needed to
+recover clean ranking. The robustness subset's clean baseline favours E08 because
+that alphabetical subset is not representative — the full-test mAP is the
+trustworthy clean number.
+
+### 10.3 Recall by target size — the failure is LARGE targets, not small ones
+
+Measured on all 191 held-out objects (raw E04 model, IoU≥0.3):
+
+| Size bucket | n | Recall | median px² |
+|---|---|---|---|
+| very small (<300 px²) | 88 | **0.193** | 166 |
+| small (300–900) | 58 | 0.155 | 472 |
+| medium (900–2500) | 28 | 0.071 | 1452 |
+| large (>2500) | 17 | **0.000** | 4350 |
+
+**A genuinely counter-intuitive result.** The thesis (and common wisdom) say small
+distant targets are the hard case. On *this* dataset with *this* model the opposite
+holds: the smallest targets are detected best and **every large target is missed**.
+The most likely cause is our own augmentation — training with `scale=0.25` and
+tiling biases the model hard toward small objects, and the handful of large test
+targets (17, in surveys 2018/2021) look unlike anything in the 2015/2010 training
+surveys. This is a real, documented limitation (`docs/LIMITATIONS.md`), and it says
+the fix is **not** "increase resolution" but "balance the scale augmentation and
+the size distribution across surveys."
+

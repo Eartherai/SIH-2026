@@ -322,3 +322,79 @@ constraint.
 *20s:* Ask them how they split their data. If frames from one survey appear in
 both train and test, their number measures memorisation, not detection. Ours is
 lower because it's measured across surveys the model has never seen.
+
+---
+
+## Phase 2 additions (thesis / UATD / Indian data / new experiments)
+
+**43. Why didn't you use SSM-DETR from the thesis?**
+*20s:* 276 GFLOPs — the thesis's own cost table rules it out for edge/AUV. And our
+bottleneck isn't feature saliency; it's detector recall and a large-target bias, so
+a heavier detector wouldn't fix the actual failure.
+
+**44. Why not just copy the thesis's 5-step preprocessing that gave +12.8 mAP?**
+*20s:* Because that gain is on **UATD, which is Forward-Looking Sonar**. SIH-26057
+is Side-Scan. We reproduced the thesis's actual 5-step pipeline and trained it
+matched on SSS — mAP50 0.043 vs 0.116 raw. It hurts SSS. The FLS gain doesn't
+transfer.
+
+**45. Then why did preprocessing help them but not you? Are you sure you're right?**
+*20s:* Different modality, and we measured it two ways — our own chain (0.032) and
+their exact 5-step (0.043), both matched, both below raw (0.116). Their result and
+ours are both true; they're just different sonar types. It's in
+`research/thesis_discrepancies.md` with the modality evidence.
+
+**46. What's the difference between UATD and SSS, and why does it matter?**
+*20s:* UATD is multibeam forward-looking sonar — a forward range–bearing fan.
+Side-scan images a swath to the side with grazing-incidence shadows. Different
+geometry, different appearance, different shadow physics. A preprocessing chain or
+detector tuned to one isn't validated for the other.
+
+**47. Is your Indian dataset actually Indian?**
+*20s:* We found exactly one genuine Indian **field** SSS source — TiHAN/IIT-Hyderabad,
+Hyderabad lakes. It's access-gated by form and unlabelled, so its role is
+Indian-domain *validation*, not training. We do **not** claim "validated for Indian
+waters" — we have no Indian data in hand, and it's freshwater lake, not sea.
+
+**48. What's the geographic origin of your training data?**
+*20s:* MILCO/NOMBO — the authors don't disclose the region, so we don't claim it's
+Indian or anywhere specific. Honest answer: unknown.
+
+**49. Can you prove cross-domain generalization?**
+*20s:* Partially — our splits are cross-**survey** (train 2015+2010, test 2018+2021,
+11-year hardware gap), which is stronger than random splitting. True cross-**sensor**
+generalization we can't prove without a second labelled SSS source; it's stated as
+a limitation.
+
+**50. How do you detect an object you've never trained on (anomaly)?**
+*20s:* Honestly — right now we don't. We built an autoencoder anomaly branch and
+measured it: AUROC ≈ 0.5, chance. Small SSS targets are too small a fraction of a
+textured patch for reconstruction error to separate. We rejected it rather than
+ship a fake score. The right fix is embedding-based novelty (PaDiM/PatchCore) —
+future work.
+
+**51. How does speckle affect your model, and did you fix it?**
+*20s:* The raw model collapses — 0% recall retained under σ=0.25 speckle. We
+addressed it by training with speckle augmentation: retention rose to ~41%, and
+every degradation mode improved. Cost: clean full-test mAP dropped 0.116→0.076 and
+that model is undertrained, so we haven't promoted it to primary yet. The mechanism
+is proven; the trade isn't free yet.
+
+**52. Your biggest failure case?**
+*20s:* Large targets. Recall is 0.000 on targets over 2500 px² — we miss every big
+one, while detecting the smallest best. It's our own scale-augmentation bias plus
+large test targets being unlike the training surveys. It's in the failure gallery
+and the limitations, front and centre.
+
+**53. What did Phase 2 actually contribute if the architecture didn't change?**
+*20s:* Evidence. Every proposed addition — thesis preprocessing, an anomaly branch,
+a segmentation verifier — was tested and **failed to beat the Phase-1 system** on
+SSS, or needs data we don't have. The contribution is knowing which boxes should
+*not* be on the diagram, and why, with measurements. That's what makes it hard to
+attack.
+
+**54. Why no segmentation verifier when the thesis's SEAUNet looked strong?**
+*20s:* SEAUNet is trained on mask labels. Our SSS data (MILCO/NOMBO) has boxes, not
+masks. The one SSS mask dataset (AI4Shipwrecks) is shipwrecks — large targets, which
+is exactly the class we already miss, so it can't verify our small-target failures.
+Building a segmenter on absent supervision would be dishonest. Deferred with a reason.

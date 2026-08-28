@@ -1,0 +1,35 @@
+{
+  "note": "same 120-frame subset; F1 at IoU>=0.3, conf 0.10",
+  "raw_model": "E04 (aquashield_primary)",
+  "speckle_model": "E08-speckle-aug",
+  "rows": [
+    {
+      "condition": "baseline",
+      "E04_raw_f1": 0.0606,
+      "E08_speckle_f1": 0.2358,
+      "E04_raw_recall": 0.0357,
+      "E08_speckle_recall": 0.3452
+    },
+    {
+      "condition": "speckle=0.25",
+      "E04_raw_f1": 0.0,
+      "E08_speckle_f1": 0.1558,
+      "E04_raw_recall": 0.0,
+      "E08_speckle_recall": 0.1429
+    },
+    {
+      "condition": "speckle=0.5",
+      "E04_raw_f1": 0.0,
+      "E08_speckle_f1": 0.0708,
+      "E04_raw_recall": 0.0,
+      "E08_speckle_recall": 0.0476
+    },
+    {
+      "condition": "speckle=1.0",
+      "E04_raw_f1": 0.0,
+      "E08_speckle_f1": 0.0,
+      "E04_raw_recall": 0.0,
+      "E08_speckle_recall": 0.0
+    }
+  ]
+}

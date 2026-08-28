@@ -12,3 +12,7 @@ runs/
 models/*.pt
 models/*.onnx
 .streamlit/secrets.toml
+models/anomaly/
+data/processed/milco_nombo_yolo_pp/
+data/processed/milco_nombo_yolo_thesis5/
+data/processed/milco_nombo_yolo_speckle/

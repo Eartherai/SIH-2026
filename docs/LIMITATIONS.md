@@ -119,30 +119,65 @@ gain shift are tolerated.
 
 The irony is not lost on us: we implemented a Lee speckle filter precisely for
 this, and then measured that applying it makes detection worse overall (§9). The
-correct fix is almost certainly to **train with speckle augmentation** rather than
-to filter at inference. That experiment is unrun.
+correct fix is to **train with speckle augmentation** rather than to filter at
+inference — and Phase 2 ran it (E08): under speckle σ=0.25 the raw model retains
+0% of its clean recall while the speckle-augmented model retains ~41%
+(`docs/BENCHMARKS.md` §10.2). So this weakness is now **measurably reduced**,
+though at a clean-mAP cost that a longer run still needs to recover.
 
-## 11. Quality score is a heuristic
+## 11. The unsupervised anomaly branch does not work yet (evaluated, rejected)
+
+PS 26057 asks for anomaly detection; the thesis lists its absence as a gap. We
+built the obvious MVP — a convolutional autoencoder trained only on normal seabed,
+scoring reconstruction error as an "unlike-normal" signal
+(`src/aquashield/anomaly/`, `scripts/train_anomaly.py`). Measured on held-out test:
+
+| Patch size | Frame ROC-AUC | Patch ROC-AUC |
+|---|---|---|
+| 64 px | 0.465 | 0.482 |
+| 32 px | 0.472 | 0.536 |
+
+**Both are at or barely above chance (0.5).** A naive reconstruction-error AE
+cannot separate these small (~24 px), low-contrast targets from textured,
+speckled, nadir-striped seabed — the target is too small a fraction of the patch
+and the normal-seabed error variance swamps it. We **do not ship an anomaly
+score**, because a chance-level score presented as anomaly detection would be
+worse than none. The code is kept as a runnable, honestly-labelled MVP. The
+right next approach is feature-embedding novelty detection (PaDiM / PatchCore over
+the detector backbone's features), not pixel reconstruction — logged as future work.
+
+## 12. Quality score is a heuristic
 
 `quality_score` combines dynamic range, dropout, saturation, speckle and usable
 area with hand-chosen weights. It is useful for warning an operator and as a soft
 input to priority. It is **not** a calibrated measure of anything physical, and
 it is labelled as a heuristic in the code.
 
-## 12. Priority weights are a product convention
+## 13. Large targets are missed entirely (recall 0.000 on >2500 px²)
+
+Counter to the usual "small targets are hard" framing, our raw model detects the
+*smallest* targets best (recall 0.193 at <300 px²) and **every large target**
+(17 objects >2500 px²) is **missed** (`docs/BENCHMARKS.md` §10.3). The cause is
+almost certainly our own `scale=0.25` augmentation plus tiling, which bias the
+model toward small objects, compounded by the large test targets being unlike
+anything in the training surveys. The fix is balancing the scale-augmentation and
+the cross-survey size distribution — not raising inference resolution (which we
+measured makes things worse). Not yet fixed.
+
+## 14. Priority weights are a product convention
 
 The priority formula is transparent and adjustable, but the weights and the
 class-harm table are **our** choices. No official marine-hazard triage standard
 for derelict gear was found during this work, and we do not claim to implement
 one.
 
-## 13. Small-sample statistics
+## 15. Small-sample statistics
 
 The test set holds 191 objects across 612 frames. Differences of a few percent
 between pipeline variants are **within noise**. The ablation table should be read
 for direction and magnitude, not for precise ordering of adjacent rows.
 
-## 14. Two things the model literally cannot do
+## 16. Two things the model literally cannot do
 
 - **Detect an object class it has never seen.** A trained ghost net, a container,
   or a pipeline will be reported — if at all — as MILCO or NOMBO, because those

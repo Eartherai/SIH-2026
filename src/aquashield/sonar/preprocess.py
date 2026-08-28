@@ -37,9 +37,14 @@ class PreprocessConfig:
     dynamic_range_normalization: bool = True
     dr_clip_percentiles: tuple[float, float] = (1.0, 99.0)
 
+    histogram_equalization: bool = False     # global HistEq (thesis 5-step step 3)
     contrast_normalization: bool = False     # CLAHE
     clahe_clip: float = 2.0
     clahe_grid: int = 8
+
+    morphology: bool = False                 # thesis 5-step step 5
+    morphology_op: str = "open"              # "open" | "close" | "tophat"
+    morphology_ksize: int = 3
 
     slant_range_correction: bool = False     # requires altitude; off by default (see note)
     altitude_px: float | None = None
@@ -158,6 +163,32 @@ def clahe(gray: np.ndarray, clip: float = 2.0, grid: int = 8) -> np.ndarray:
     return op.apply(u8).astype(np.float32) / 255.0
 
 
+def histogram_equalize(gray: np.ndarray) -> np.ndarray:
+    """Global histogram equalisation (thesis 5-step, step 3).
+
+    Included ONLY to reproduce the thesis pipeline faithfully. Applying global
+    HistEq and then CLAHE (step 4) is a double contrast stretch that is unusual
+    for a detection front-end; we keep it exactly as the thesis specifies so the
+    comparison is honest, and let the measurement decide.
+    """
+    u8 = (np.clip(gray, 0, 1) * 255).astype(np.uint8)
+    return cv2.equalizeHist(u8).astype(np.float32) / 255.0
+
+
+def morphological(gray: np.ndarray, op: str = "open", ksize: int = 3) -> np.ndarray:
+    """Grayscale morphology (thesis 5-step, step 5).
+
+    Note, stated plainly: an opening with a 3x3+ kernel erodes exactly the small
+    compact highlights that are our hardest targets (~24 px). We reproduce it to
+    test the thesis claim, not because it is obviously safe for small-object
+    detection.
+    """
+    u8 = (np.clip(gray, 0, 1) * 255).astype(np.uint8)
+    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (max(1, ksize), max(1, ksize)))
+    ops = {"open": cv2.MORPH_OPEN, "close": cv2.MORPH_CLOSE, "tophat": cv2.MORPH_TOPHAT}
+    return cv2.morphologyEx(u8, ops.get(op, cv2.MORPH_OPEN), k).astype(np.float32) / 255.0
+
+
 def fix_dropouts(gray: np.ndarray, tol: float = 1e-3) -> tuple[np.ndarray, dict]:
     """Linearly interpolate ping rows lost to vehicle motion or telemetry gaps.
 
@@ -268,9 +299,17 @@ def preprocess(img: np.ndarray, cfg: PreprocessConfig | None = None) -> Preproce
         gray = normalize_dynamic_range(gray, *cfg.dr_clip_percentiles)
         steps.append(f"dynamic_range_normalization({cfg.dr_clip_percentiles})")
 
+    if cfg.histogram_equalization:
+        gray = histogram_equalize(gray)
+        steps.append("histogram_equalization")
+
     if cfg.contrast_normalization:
         gray = clahe(gray, cfg.clahe_clip, cfg.clahe_grid)
         steps.append(f"clahe(clip={cfg.clahe_clip},grid={cfg.clahe_grid})")
+
+    if cfg.morphology:
+        gray = morphological(gray, cfg.morphology_op, cfg.morphology_ksize)
+        steps.append(f"morphology({cfg.morphology_op},k={cfg.morphology_ksize})")
 
     return PreprocessResult(
         image=(np.clip(gray, 0, 1) * 255).astype(np.uint8),
@@ -287,4 +326,17 @@ PROFILES: dict[str, PreprocessConfig] = {
     "standard": PreprocessConfig(),                                  # lee + gain + DR
     "aggressive": PreprocessConfig(water_column_removal=True, contrast_normalization=True,
                                    denoise_method="lee", lee_window=7),
+    # Faithful reproduction of Divyabarathi (2025) "5-Step Signal Preprocessing":
+    #   TVG -> Median -> Histogram Equalization -> CLAHE -> Morphology.
+    # TVG is reproduced by our empirical across-track gain normalisation (we cannot
+    # do a true sonar-equation TVG without raw intensities / range params). This
+    # profile exists to test the thesis claim on SSS under matched train/inference.
+    "thesis5step": PreprocessConfig(
+        dropout_handling=False, water_column_removal=False,
+        denoise=True, denoise_method="median", lee_window=3,
+        gain_normalization=True, gain_strength=1.0,          # TVG stand-in
+        dynamic_range_normalization=False,
+        histogram_equalization=True,
+        contrast_normalization=True, clahe_clip=2.0, clahe_grid=8,
+        morphology=True, morphology_op="open", morphology_ksize=3),
 }

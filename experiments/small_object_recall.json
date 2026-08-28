@@ -1,0 +1,33 @@
+{
+  "model": "aquashield_primary.pt (E04 raw)",
+  "iou_thr": 0.3,
+  "conf": 0.05,
+  "overall_recall": 0.147,
+  "n_objects": 191,
+  "buckets": [
+    {
+      "bucket": "very small <300px^2",
+      "n": 88,
+      "recall": 0.193,
+      "median_px2": 166.0
+    },
+    {
+      "bucket": "small 300-900",
+      "n": 58,
+      "recall": 0.155,
+      "median_px2": 472.0
+    },
+    {
+      "bucket": "medium 900-2500",
+      "n": 28,
+      "recall": 0.071,
+      "median_px2": 1452.0
+    },
+    {
+      "bucket": "large >2500",
+      "n": 17,
+      "recall": 0.0,
+      "median_px2": 4350.0
+    }
+  ]
+}
