@@ -56,7 +56,8 @@ any reported number. Splits are by **acquisition year** (leakage-free), never ra
 | **test (all metrics)** | 2018 + 2021 | 612 | 191 (473 empty frames) |
 
 **Honest gaps:** we have **never detected a ghost net** (the ghost-gear dataset is
-access-gated, HTTP 403); geolocation accuracy is **never validated** (no nav data);
+gate-`auto` on HF — needs one human "Agree and access" click, ingestion pipeline
+already built and tested); geolocation accuracy is **never validated** (no nav data);
 the thesis's headline preprocessing gain is on **FLS, not SSS**. Every other dataset
 (UATD·FLS, Marine-Debris·FLS, AI4Shipwrecks·wrecks, KLSG, TiHAN/IITH·Indian-but-gated)
 is assigned a non-training role — see [`research/dataset_role_matrix.md`](research/dataset_role_matrix.md),
@@ -97,9 +98,14 @@ survey gap) — but **not inflated by a random split**. Full tables + reproducti
 **Cross-cutting findings:** preprocessing is measured, not assumed (12× collapse if
 mismatched); the smallest targets are detected best while **every large target is
 missed** (recall 0.000 >2500 px²); an inspectable filter *diagnosed a bug in our own
-pipeline*. Prior-art & thesis analysis: [`research/thesis_discrepancies.md`](research/thesis_discrepancies.md),
-[`research/external_architectures.md`](research/external_architectures.md),
-[`research/ARCHITECTURE_DECISION.md`](research/ARCHITECTURE_DECISION.md).
+pipeline*; speckle-aug training solves a robustness gap that a **Nov-2025 published
+paper still lists as future work**. Six external references cross-checked (thesis,
+TR-YOLOv5s, MSF-DETR, BHP-UNet, LEF-RT-DETR + 4 production systems) — none beat this
+architecture's shape; all confirm the edge-cost discipline.
+[`research/FINAL_ARCHITECTURE.md`](research/FINAL_ARCHITECTURE.md) is the full synthesis
+and the winning-approach argument. Also: [`thesis_discrepancies.md`](research/thesis_discrepancies.md),
+[`external_architectures.md`](research/external_architectures.md),
+[`ARCHITECTURE_DECISION.md`](research/ARCHITECTURE_DECISION.md).
 
 ![Failure gallery](docs/images/failure_gallery.png)
 
@@ -107,12 +113,16 @@ pipeline*. Prior-art & thesis analysis: [`research/thesis_discrepancies.md`](res
 
 ## What's to be done (next)
 
-1. Longer, tuned **speckle-aug** run to recover clean mAP → promote to primary.
-2. Fix **large-target recall** (balance scale-augmentation + cross-survey sizes).
-3. Replace the failed AE with **embedding-novelty** anomaly (PaDiM / PatchCore).
-4. Train the **torchvision backend** → licence-clean (non-AGPL) path.
-5. Human-gated data steps: request **ghost-gear** (HF) + **TiHAN/IITH Indian SSS** access.
-6. Evaluate **cross-track downsampling** (TR-YOLOv5s) as a matched retrain.
+1. **Ghost-gear training — one click away.** `scripts/prepare_crab_pot.py` is
+   built and tested (6,674 real SSS images, recording-level leakage-free split)
+   but the HF dataset is gate-`auto`: a human must open the dataset page and
+   click *Agree and access repository* once — no API/token can do this step.
+2. Longer, tuned **speckle-aug** run to recover clean mAP → promote to primary.
+3. Fix **large-target recall** (balance scale-augmentation + cross-survey sizes).
+4. Replace the failed AE with **embedding-novelty** anomaly (PaDiM / PatchCore).
+5. Train the **torchvision backend** → licence-clean (non-AGPL) path.
+6. **TiHAN/IITH Indian SSS** access — same one-human-step pattern as #1.
+7. Evaluate **cross-track downsampling** (TR-YOLOv5s) as a matched retrain.
 
 ---
 

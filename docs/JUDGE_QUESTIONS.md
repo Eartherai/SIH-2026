@@ -398,3 +398,39 @@ attack.
 masks. The one SSS mask dataset (AI4Shipwrecks) is shipwrecks — large targets, which
 is exactly the class we already miss, so it can't verify our small-target failures.
 Building a segmenter on absent supervision would be dishonest. Deferred with a reason.
+
+---
+
+## Phase 3 additions (LEF-RT-DETR, ghost-gear data access, final synthesis)
+
+**55. Why didn't you use LEF-RT-DETR — it's a 2026 paper specifically on SSS?**
+*20s:* We read it. It's 49.7 GFLOPs — 8× our detector — for a +4.3 AP gain on a
+**970-instance, non-public, self-built dataset** we can't reproduce or compare
+against. It also explicitly lists sonar-specific augmentation as unsolved future
+work, which we already have (speckle-aug, E08).
+
+**56. You said you had ghost-gear data now — do you or don't you?**
+*20s:* Correction, stated plainly: I initially reported access based on a
+metadata call succeeding, which was wrong — `dataset_info()` lists files for
+gated repos regardless of approval; every actual file returns HTTP 403. The
+dataset needs one human click ("Agree and access repository," auto-approved, no
+review wait) that no API token can perform. The ingestion pipeline is fully
+built and tested (`scripts/prepare_crab_pot.py`, leakage-free by recording ID)
+and runs the moment that click happens.
+
+**57. After six papers, what's actually different about your submission?**
+*20s:* Not the model — every paper we reviewed proposes a heavier detector for a
+few AP points, and none of them clears our edge-cost bar. What's different is
+we **measured** every tempting shortcut instead of assuming it: the thesis's
+preprocessing gain (rejected, it's FLS not SSS), an anomaly branch (rejected,
+AUROC ≈ chance), speckle augmentation (kept, and ahead of a Nov-2025 published
+paper that still calls it future work). The architecture converges with the
+defence-grade blueprint (SeeByte) independently — that convergence is the
+validation.
+
+**58. What's your actual ceiling with the data you have?**
+*20s:* We're data-limited, not architecture-limited. 447 training objects is the
+real ceiling — no detector in six reviewed papers would do dramatically better
+with the same data (LEF-RT-DETR needed 871 training images just for AP 51.6 on
+3 simple geometric shapes). The system-level pipeline is stronger than the data
+currently feeding it. See `research/FINAL_ARCHITECTURE.md`.

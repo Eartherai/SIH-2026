@@ -208,3 +208,18 @@ class TestModelMeta:
         """Guards against someone 'helpfully' restoring a preprocessing default."""
         from aquashield.pipeline import PipelineConfig
         assert PipelineConfig().preprocess_profile == "none"
+
+
+class TestCrabPotSplitLogic:
+    """The crab-pot recording-level split must not leak, same discipline as
+    the MILCO/NOMBO survey-year split. Testable without the (gated) dataset
+    by exercising survey_key() directly against real observed filenames."""
+
+    def test_survey_key_groups_same_recording(self):
+        from aquashield.ingestion.jsonl_bbox import survey_key
+        a = survey_key("Rec09_Sensor_Depth_wcp_ss_port_00001_jpg.rf.abc123.jpg")
+        b = survey_key("Rec09_Sensor_Depth_wcp_ss_star_00042_png_jpg.rf.def456.jpg")
+        c = survey_key("Rec14_Sensor_Depth_wcp_ss_port_00001_jpg.rf.ghi789.jpg")
+        assert a == b == "Rec09"
+        assert c == "Rec14"
+        assert a != c

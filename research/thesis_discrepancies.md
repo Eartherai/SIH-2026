@@ -76,3 +76,21 @@ thesis chain rather than our own.
    attention for segmentation (SEAUNet/EAAG), an anomaly branch, edge/structure
    features for verification, and the edge-deployment discipline (skip the 276-GFLOP
    transformer) — are worth testing on SSS, and are evaluated as such in Phase 2.
+
+## Sixth reference: LEF-RT-DETR (Zhang et al., 2026, *Frontiers in Marine Science*)
+
+Verified 2026-08-28. A lightweight edge-frequency RT-DETR variant for SSS.
+
+| Claim | Value | Verified interpretation |
+|---|---|---|
+| AP/AP50 gain vs RT-DETR-r18 baseline | 47.3→51.6 AP (+4.3), 86.7→91.0 AP50 (+5.3) | Real, but on a **self-built, non-public, 970-instance** dataset (1,246 image blocks) — not reproducible by us, and far smaller than even MILCO/NOMBO. |
+| Cost | 135.8→49.7 GFLOPs, 42.7→15.2 MB, 21.1→33.0 FPS | **8× our YOLO11n's 6.3 GFLOPs.** Even their own "lightweight" variant is heavy vs our edge target. |
+| Explicit future work | "sonar-specific augmentation, few-shot learning... needed" | **We already ran speckle augmentation (E08)** — ahead of a paper published *after* our Phase 1. |
+
+**Verdict:** reinforces every Phase-2 decision rather than changing any of them —
+match architecture to a named failure mode (we do: shadow/contrast/texture
+features, not a bigger backbone); report GFLOPs/params/FPS alongside accuracy (we
+do, per-frame and per-stage); don't copy a research-grade architecture wholesale
+(we didn't, for the 4th time in a row: SSM-DETR, MSF-DETR, and now LEF-RT-DETR are
+all rejected as primary on the same edge-cost grounds). See
+`research/FINAL_ARCHITECTURE.md` for the synthesis across all six references.

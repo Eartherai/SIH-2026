@@ -68,10 +68,17 @@ sss-crab-pot-detection-ds  (derelict crab pots / ghost fishing gear)
   AQUA-SHIELD ships an adapter for it (src/aquashield/ingestion/jsonl_bbox.py)
   but was NOT trained on it, because access could not be obtained.
 
+  Status update (2026-08-28): confirmed still gated even with a valid, authenticated
+  HF token -- dataset_info() lists metadata regardless of approval, but every
+  actual file (images, metadata.jsonl) returns HTTP 403 x-error-code:GatedRepo.
+  The gate type is "auto", meaning NO manual review by the maintainers is needed --
+  but a human must still click "Agree and access repository" on the dataset page
+  once. No API can do that step.
+
   To use it:
-    1. Sign in at https://huggingface.co/datasets/PINGEcosystem/sss-crab-pot-detection-ds
-    2. Request access and wait for approval
-    3. huggingface-cli login
+    1. Open https://huggingface.co/datasets/PINGEcosystem/sss-crab-pot-detection-ds
+    2. Click "Agree and access repository" (instant, auto-approved)
+    3. export HF_TOKEN=hf_...          (never commit this)
     4. python scripts/prepare_crab_pot.py
 """)
 
