@@ -801,6 +801,15 @@ python scripts/prepare_crab_pot.py        # ready now, blocked only on access
 pipeline run, a determinism check, a headless run of the actual dashboard in
 both view modes, and the offline-guarantee scan.
 
+**Training on a real GPU:** `notebooks/aqua_shield_kaggle_2xT4.ipynb` drives
+this exact pipeline on Kaggle's free 2× Tesla T4 accelerator — same recipe as
+the primary model with real CUDA headroom (larger batch, no wall-clock
+compromise), plus optional cells to actually test whether more detector
+capacity helps (previously only reasoned about, not measured) and to
+genuinely exercise both GPUs in one run. Written and reviewed but **not yet
+executed** — the first Kaggle run will be the first real test of the CUDA
+code path (MPS/CPU were the only paths exercised on Apple Silicon).
+
 ---
 
 ## 20. Full limitations (16 items)
