@@ -1,0 +1,71 @@
+{
+  "kind": "learned_logistic",
+  "fitted": true,
+  "threshold": 0.6799999999999999,
+  "input_names": [
+    "target_contrast",
+    "shadow_ratio",
+    "shadow_side_consistent",
+    "highlight_compactness",
+    "aspect_ratio",
+    "edge_straightness",
+    "texture_homogeneity",
+    "background_roughness",
+    "local_snr",
+    "size_rank",
+    "raw_score"
+  ],
+  "weights": {
+    "target_contrast": -1.3626614844,
+    "shadow_ratio": -0.4595206094,
+    "shadow_side_consistent": 0.8329010947,
+    "highlight_compactness": 0.1298280272,
+    "aspect_ratio": 0.0322696936,
+    "edge_straightness": -0.2655306497,
+    "texture_homogeneity": -0.7417207626,
+    "background_roughness": 0.3230150521,
+    "local_snr": 0.9513951475,
+    "size_rank": 0.948897169,
+    "raw_score": 0.9264241259
+  },
+  "bias": -2.0329400871,
+  "standardisation": {
+    "mu": [
+      -0.0372653608,
+      0.1315157549,
+      0.359430605,
+      0.1354565011,
+      1.9617159528,
+      0.4830825397,
+      0.4743909411,
+      0.1385227921,
+      3.8382481277,
+      0.4687417347,
+      0.0961366717
+    ],
+    "sd": [
+      0.3583088967,
+      0.176556297,
+      0.4798335599,
+      0.0883875506,
+      0.9043452817,
+      0.2513101691,
+      0.0498019847,
+      0.0409721574,
+      1.2012226642,
+      0.044073406,
+      0.1213243367
+    ]
+  },
+  "n": 281,
+  "positives": 22,
+  "negatives": 259,
+  "pos_weight": 11.773,
+  "l2": 0.01,
+  "iters": 6000,
+  "selected_threshold_f1": 0.5714,
+  "selected_threshold_recall": 0.8182,
+  "min_recall_constraint": 0.8,
+  "fit_split": "val",
+  "iou_threshold": 0.3
+}

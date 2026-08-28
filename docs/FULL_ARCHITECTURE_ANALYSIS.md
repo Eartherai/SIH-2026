@@ -165,14 +165,20 @@ augmentation-bias hypothesis. Diagnosed, unresolved limitation
 
 **Finding:** the raw model **totally collapses** under even mild added
 speckle — 0% of clean recall retained. Training with speckle-augmented copies
-(σ∈{0.25,0.5}) converts that into graceful degradation (~41% retained at
-σ=0.25), and improves every other degradation mode tested (blur, resolution
-loss, ping dropout) too. **Honest cost:** on the full 612-frame clean test,
-E08 scores mAP50 **0.076** vs E04's **0.116** — it is undertrained (55 epochs
-on 3× the data) and the trade is not yet free. **Mechanism proven, promotion
-to primary pending a longer tuned run.** LEF-RT-DETR (published *after* our
-first speckle-aug run) still lists sonar-specific augmentation as unsolved
-future work — we are ahead of a 2026 paper on this specific axis.
+(σ∈{0.25,0.5}) converts that into graceful degradation. We tested whether this
+was an undertraining artifact by running the identical recipe twice — E08 cut
+short at epoch 44, and **E09 run to full 95-epoch convergence**. It was not
+undertraining: E09's full-test recall (0.079) came out *lower* than E08's
+(0.142), even though precision recovered close to the primary's (0.311 vs
+0.344). This is a real, relatively stable accuracy/robustness tradeoff, not
+something a longer run resolves. **Decision: E04 stays primary; E09 ships as
+a separate, fully-usable alternative checkpoint**
+(`models/aquashield_speckle_robust.pt`) for noise-heavy deployments — not
+promoted, because it is a tradeoff, not a strict improvement. Full three-way
+comparison: `experiments/e04_e08_e09_final_comparison.json`. LEF-RT-DETR
+(published *after* our first speckle-aug run) still lists sonar-specific
+augmentation as unsolved future work — we are ahead of a 2026 paper on having
+attempted and honestly measured it at all.
 
 ### 2.9 Geolocation
 
@@ -230,8 +236,10 @@ adopted untested (`research/ARCHITECTURE_DECISION.md`).
    and it is the headline number:** +30% precision, −32% false-alarm frames,
    at the cost of 2 of 21 true positives. That trade is exactly what PS 26057
    asks for (minimize false positives from natural seabed).
-2b. **A second genuine improvement — speckle-augmented training — is real but
-   not yet free**, and it is reported as such rather than rounded up to "kept."
+2b. **A second effort — speckle-augmented training — was tested to full
+   convergence and found to be a real but genuine tradeoff, not a strict win.**
+   It is shipped as a documented alternative checkpoint rather than either
+   hidden or force-promoted to primary.
 3. **It runs where the field system needs to run.** 21ms/frame on Apple
    Silicon, 10.6MB ONNX, no CUDA assumption — none of the four detection
    papers reviewed clear that bar; three explicitly flag edge deployment as

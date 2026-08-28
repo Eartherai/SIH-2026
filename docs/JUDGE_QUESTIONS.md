@@ -374,11 +374,15 @@ ship a fake score. The right fix is embedding-based novelty (PaDiM/PatchCore) �
 future work.
 
 **51. How does speckle affect your model, and did you fix it?**
-*20s:* The raw model collapses — 0% recall retained under σ=0.25 speckle. We
-addressed it by training with speckle augmentation: retention rose to ~41%, and
-every degradation mode improved. Cost: clean full-test mAP dropped 0.116→0.076 and
-that model is undertrained, so we haven't promoted it to primary yet. The mechanism
-is proven; the trade isn't free yet.
+*20s:* The raw model collapses — 0% recall retained under σ=0.25 speckle.
+Speckle-augmented training partially fixes it — but we ran it to full
+convergence specifically to check whether an earlier version's accuracy cost
+was just undertraining. It wasn't: the fully-converged model's recall on
+clean data (0.079) is actually *lower* than the undertrained one's (0.142),
+even though robustness and precision both improved. It's a genuine, stable
+tradeoff. We ship both — the accurate model stays primary, the robust one is
+a documented alternative checkpoint — rather than pretending one dominates
+the other.
 
 **52. Your biggest failure case?**
 *20s:* Large targets. Recall is 0.000 on targets over 2500 px² — we miss every big

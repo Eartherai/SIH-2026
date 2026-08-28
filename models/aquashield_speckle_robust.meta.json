@@ -1,0 +1,7 @@
+{
+  "preprocess_profile": "none",
+  "experiment_id": "E09-final-speckle-full",
+  "data": "data/processed/milco_nombo_yolo_speckle/data.yaml",
+  "imgsz": 640,
+  "note": "ALTERNATIVE checkpoint, not primary. Trained on raw+speckle-augmented data (sigma 0.25,0.5), full 95-epoch run. More robust to speckle/blur/resolution-loss than the primary model but LOWER recall on clean held-out test (0.079 vs 0.164) and worse under heavy ping-dropout. Use when noise robustness matters more than peak clean accuracy. See experiments/e04_e08_e09_final_comparison.json."
+}

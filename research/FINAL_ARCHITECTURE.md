@@ -82,11 +82,15 @@ Ranked by expected impact, all confirmed feasible with resources already in hand
    single highest-leverage remaining task in the entire project.
 2. **Indian-domain validation data** — TiHAN/IIT-Hyderabad SSS (Hyderabad lakes),
    also one human form-submission away (`research/INDIAN_SONAR_DATA.md`).
-3. **Longer speckle-aug run** — pure compute, no new data; recovers the clean-mAP
-   trade documented in §2.
-4. **Large-target recall fix** — pure retraining discipline (rebalance
-   scale-augmentation against the cross-survey size distribution); the failure is
-   diagnosed (`docs/BENCHMARKS.md` §10.3), the fix is not yet applied.
+3. ~~Longer speckle-aug run~~ — **done this session (E09).** Resolved, not in
+   our favour: full 95-epoch convergence did not close the clean-accuracy gap
+   (recall came out *lower* than the undertrained attempt). Real, stable
+   tradeoff — E04 stays primary, E09 ships as a documented alternative
+   checkpoint. See `docs/BENCHMARKS.md` §10.2.
+4. **Large-target recall fix** — re-diagnosed as a **5.5× training-data
+   size-coverage gap** (`experiments/large_target_gap_analysis.json`), not an
+   augmentation-tuning problem; needs more large-object training data or
+   deliberate paste-augmentation, neither attempted yet.
 
 Nothing above requires new architecture. That is the finding.
 
@@ -119,7 +123,7 @@ The differentiator is not a bigger model. It is:
 | # | Task | Blocker | Effort |
 |---|---|---|---|
 | 1 | Ghost-gear training on crab-pot data | **one manual click** (`HF gate`) | ~1 day once unblocked: prep→train→fit→evaluate, pipeline already built |
-| 2 | Longer speckle-aug run, promote to primary | none — compute only | few hours on M5 |
+| 2 | ~~Longer speckle-aug run~~ | — | **Done, resolved this session.** Full convergence (E09) confirmed the tradeoff is real, not a training-budget artifact — recall was lower than the undertrained run despite better precision. Not promoted; shipped as `models/aquashield_speckle_robust.pt`. |
 | 3 | Fix large-target recall | **re-diagnosed as a 5.5× data-coverage gap, not an augmentation bug** — needs more large-object training data or paste-augmentation | half-day+, data-dependent |
 | 4 | Indian-domain validation (TiHAN/IITH) | one manual form | prep pending access |
 | 5 | Embedding-based anomaly (PaDiM/PatchCore) to replace the failed AE | none | ~1 day, new subsystem |

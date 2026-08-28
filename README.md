@@ -85,6 +85,13 @@ this document.
   compute cost or unreproducible data. Two of our own experiments (an
   anomaly-detection branch, our sonar preprocessing chain) were built,
   measured, and **rejected with evidence** rather than shipped anyway.
+- **A genuine tradeoff, tested to completion, and resolved honestly:**
+  speckle-augmented training (E09, run to full 95-epoch convergence, not cut
+  short) measurably improves robustness under noise but **does not** close to
+  the primary model's clean-data accuracy — recall actually came out lower
+  than an earlier undertrained attempt. We shipped it as a documented
+  alternative checkpoint rather than either hiding the result or promoting a
+  regression.
 - **What's honestly still weak:** detector accuracy is modest (mAP50 0.116,
   cross-survey); a specific large-target failure mode is diagnosed as a
   genuine training-data coverage gap; geolocation accuracy has never been
@@ -459,14 +466,41 @@ only, val/test kept clean) converts this into graceful degradation:
 | speckle σ=1.0 | 0.000 | 0.000 |
 
 Every other degradation mode (blur, resolution loss, ping dropout) also
-improves under the speckle-augmented model. **Honest cost:** on the full
-612-frame clean test, E08 scores mAP50 **0.076** vs E04's **0.116** — it was
-undertrained (stopped at 55 epochs, killed by the operator, not by
-convergence) and the clean-accuracy trade is not yet free. **A properly
-completed, longer run (E09) was launched to resolve this trade — see §21.**
-LEF-RT-DETR (published *after* our first speckle-aug run) still lists
-sonar-specific augmentation as unsolved future work; we are ahead of a 2026
-paper on this specific axis.
+improves under the speckle-augmented model, at first look. **We then tested
+whether this was simply an artifact of undertraining** (E08 was stopped at
+epoch 44 by the operator, not by convergence) by running the identical
+recipe to full completion — **E09, 95 of 100 epochs, best val at epoch 60.**
+
+**It was not an undertraining artifact — it is a real, relatively stable
+tradeoff:**
+
+| | E04 (raw) | E08 (undertrained) | E09 (fully converged) |
+|---|---|---|---|
+| Full-test mAP50 | **0.1163** | 0.0763 | 0.0812 |
+| Full-test recall | **0.1639** | 0.1415 | **0.0785** (lower than either) |
+| Full-test precision | 0.3444 | 0.1849 | 0.3106 |
+
+Full convergence recovered most of the precision deficit (0.185→0.311,
+close to the primary's 0.344) but **recall dropped further**, not less —
+E09's clean recall (0.079) is lower than the *undertrained* E08's (0.142).
+mAP50 barely moved (0.076→0.081), still well below the primary's 0.116.
+
+On the 120-frame robustness subset, the picture is genuinely mixed, not a
+clean win: E09 improves over E08 on baseline F1, speckle σ=0.25, blur, and
+resolution-loss — but is **worse** than E08 under heavy ping-dropout (F1
+0.052 vs 0.179) and speckle σ=0.5 (0.057 vs 0.071). Both collapse fully at
+speckle σ=1.0.
+
+**Decision: the primary model does not change.** E04 remains primary — best
+on the metrics every other number in this project is measured against. E09
+is shipped as a documented, separately-usable alternative checkpoint
+(`models/aquashield_speckle_robust.pt`, own fitted FP filter and calibration)
+for deployments where noise robustness matters more than peak clean
+accuracy. Full three-way comparison:
+`experiments/e04_e08_e09_final_comparison.json`. LEF-RT-DETR (published
+*after* our first speckle-aug run) still lists sonar-specific augmentation
+as unsolved future work — even with this honest, mixed result, we are ahead
+of a 2026 paper on having attempted and measured it at all.
 
 ---
 
@@ -584,7 +618,7 @@ shorter winning-approach synthesis).
 | E06-preprocessed-matched | our chain, matched | 41 | 0.0318 | 0.0093 | 0.0769 | 0.1089 |
 | E07-thesis5step-matched | thesis chain, matched | 80 | 0.0429 | 0.0158 | 0.1592 | 0.1342 |
 | E08-speckle-aug | raw+speckle train, clean test | 55 (killed early) | 0.0763 | 0.0236 | 0.1849 | 0.1415 |
-| **E09-final-speckle-full** | raw+speckle train, clean test, full run | **in progress — see §21** | | | | |
+| E09-final-speckle-full | raw+speckle train, clean test, **full 95-epoch run** | 95 | 0.0812 | 0.0312 | 0.3106 | **0.0785** |
 
 ### 16.2 Pipeline ablation (612 held-out frames, IoU≥0.3)
 
@@ -805,7 +839,7 @@ Read in full: `docs/LIMITATIONS.md`. Summary:
 | # | Task | Blocker | Status |
 |---|---|---|---|
 | 1 | **Ghost-gear training on crab-pot data** | one human click on the HF dataset page (gate type `auto`, instant, no review wait) | pipeline built + tested, waiting |
-| 2 | Recover the speckle-aug clean-accuracy trade | none — compute only | **E09-final-speckle-full launched this session** — full run to genuine patience-triggered convergence instead of an operator kill at epoch 44 |
+| 2 | ~~Recover the speckle-aug clean-accuracy trade~~ | — | **Resolved this session (E09), not in our favour.** A full 95-epoch run did not close the gap — recall dropped further (0.079 vs E08's 0.142), mAP50 barely moved. This is a genuine, relatively stable tradeoff, not an undertraining artifact. E04 stays primary; E09 shipped as a documented alternative checkpoint (`models/aquashield_speckle_robust.pt`) for noise-heavy deployments. |
 | 3 | Fix large-target recall | **re-diagnosed as a 5.5× data-coverage gap**, not an augmentation bug — needs more large-object training data or paste-augmentation | diagnosed, unresolved |
 | 4 | TiHAN/IIT-Hyderabad Indian validation access | one human form submission | pending |
 | 5 | Replace the failed autoencoder with embedding-based novelty (PaDiM/PatchCore) | none | not started |

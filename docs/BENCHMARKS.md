@@ -46,6 +46,7 @@ Full records in `experiments/registry.jsonl`.
 | `E06-preprocessed-matched` | imgsz 640, lr0 0.002, mosaic 0.3, scale 0.25 | 41* | **0.0318** | 0.0093 | 0.0769 | 0.1089 |
 | `E07-thesis5step-matched` | imgsz 640, lr0 0.002, mosaic 0.3, scale 0.25 | 80 | **0.0429** | 0.0158 | 0.1592 | 0.1342 |
 | `E08-speckle-aug` | imgsz 640, lr0 0.002, mosaic 0.3, scale 0.25 | 55 | **0.0763** | 0.0236 | 0.1849 | 0.1415 |
+| `E09-final-speckle-full` | imgsz 640, lr0 0.002, mosaic 0.3, scale 0.25 | 95 | **0.0812** | 0.0312 | 0.3106 | 0.0785 |
 
 \* stopped early by the operator; see `notes` in `experiments/registry.jsonl`.
 
@@ -281,35 +282,55 @@ matched, also **underperforms raw on SSS** (0.043 vs 0.116). This is consistent
 with the modality argument: the +12.8-point gain is an FLS result and does not
 transfer to side-scan. Production stays raw (`preprocess_profile: none`).
 
-### 10.2 Speckle augmentation — the Phase-1 collapse, addressed
+### 10.2 Speckle augmentation — tested to completion, a real but incomplete tradeoff
 
-Phase 1 found detection collapsed under added speckle. The fix for a distribution
-the detector never saw is to **train** on it (E08: train set = raw frames + their
-multiplicative-speckle copies at σ∈{0.25,0.5}; val/test kept clean). Robustness on
-the identical 120-frame subset:
+Phase 1 found detection collapsed under added speckle. The fix for a
+distribution the detector never saw is to **train** on it: E08 (train set =
+raw frames + multiplicative-speckle copies at σ∈{0.25,0.5}; val/test kept
+clean) was our first attempt, stopped early by the operator at epoch 44.
+**E09 reran the identical recipe to genuine convergence** (95 of 100 epochs,
+best val at epoch 60) specifically to test whether E08's clean-accuracy
+deficit was an undertraining artifact.
 
-| Condition | E04 raw — F1 (recall) | E08 speckle-aug — F1 (recall) |
-|---|---|---|
-| clean baseline | 0.061 (0.036) | 0.236 (0.345) |
-| speckle σ=0.25 | **0.000 (0.000)** | **0.156 (0.143)** |
-| speckle σ=0.5 | 0.000 (0.000) | 0.071 (0.048) |
-| speckle σ=1.0 | 0.000 (0.000) | 0.000 (0.000) |
-| blur k=5 | 0.044 | 0.166 |
-| resolution ×0.5 | 0.022 | 0.153 |
-| ping dropout 15% | 0.000 | 0.179 |
+**It was not.** Full held-out test (612 frames, the authoritative number):
 
-**At σ=0.25 the raw model retains 0% of its clean recall; the speckle-augmented
-model retains ~41%.** Augmentation converts total collapse into graceful
-degradation across every degradation mode.
+| | E04 (raw, primary) | E08 (undertrained) | E09 (fully converged) |
+|---|---|---|---|
+| mAP50 | **0.1163** | 0.0763 | 0.0812 |
+| Precision | 0.3444 | 0.1849 | 0.3106 |
+| Recall | **0.1639** | 0.1415 | **0.0785** |
 
-**Honest cost.** On the *full* 612-frame clean test, E08 (mAP50 0.076, P 0.185,
-R 0.142) sits **below** E04 (0.116 / 0.344 / 0.164): the augmented model detects
-about as many targets but ranks them worse, and it was stopped early (55 epochs on
-3× data — undertrained). So augmentation is the **right mechanism** for the speckle
-weakness but the trade is **not yet free**; a longer, tuned run is needed to
-recover clean ranking. The robustness subset's clean baseline favours E08 because
-that alphabetical subset is not representative — the full-test mAP is the
-trustworthy clean number.
+Full training recovered most of the precision deficit (0.185→0.311) but
+**recall dropped further**, not less — E09's recall is lower than even the
+undertrained E08's. mAP50 barely moved. This revises the earlier hypothesis
+that the deficit was "just" a training-budget problem.
+
+Robustness on the identical 120-frame subset, all three models:
+
+| Condition | E04 raw F1 (R) | E08 undertrained F1 (R) | E09 full-run F1 (R) |
+|---|---|---|---|
+| clean baseline | 0.061 (0.04) | 0.236 (0.35) | 0.237 (0.23) |
+| speckle σ=0.25 | **0.000 (0.00)** | 0.156 (0.14) | **0.173 (0.13)** |
+| speckle σ=0.5 | 0.000 (0.00) | 0.071 (0.05) | 0.057 (0.04) |
+| speckle σ=1.0 | 0.000 (0.00) | 0.000 (0.00) | 0.000 (0.00) |
+| blur k=5 | 0.044 (0.02) | 0.166 (0.31) | **0.252 (0.24)** |
+| resolution ×0.5 | 0.022 (0.01) | 0.153 (0.30) | **0.236 (0.23)** |
+| ping dropout 15% | 0.000 (0.00) | 0.179 (0.15) | 0.052 (0.04) |
+
+**Mixed, not a clean win.** E09 improves over E08 on baseline, speckle σ=0.25,
+blur, and resolution-loss — but is *worse* than E08 under heavy ping-dropout
+and speckle σ=0.5. Both still collapse fully at σ=1.0. At σ=0.25 the raw
+model retains 0% of its clean recall; both augmented variants retain
+13–14%.
+
+**Decision: E04 remains primary.** It is best on every full-test accuracy
+metric, which is what every other number in this project is measured
+against. E09 is shipped as a separate, fully-usable alternative checkpoint
+(`models/aquashield_speckle_robust.pt`, own fitted FP filter and
+calibration) for deployments where noise robustness matters more than peak
+clean accuracy — not promoted to primary, because it is a genuine tradeoff,
+not a strict improvement. Full data:
+`experiments/e04_e08_e09_final_comparison.json`.
 
 ### 10.3 Recall by target size — the failure is LARGE targets, not small ones
 
@@ -338,4 +359,3 @@ coverage gap, not a fixable hyperparameter** — an earlier hypothesis blaming
 more training data spanning the test surveys' size range, or paste-augmentation
 that deliberately inserts oversized crops; neither attempted yet
 (`docs/LIMITATIONS.md` §13).
-

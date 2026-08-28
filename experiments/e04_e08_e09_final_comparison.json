@@ -1,0 +1,136 @@
+{
+  "note": "Same 120-frame robustness subset for F1/recall-under-perturbation; full 612-frame held-out test for mAP50/P/R. These are DIFFERENT metrics (fixed-threshold F1 vs area-under-PR-curve mAP) over DIFFERENT frame sets, not directly comparable to each other numerically -- only within the same table.",
+  "full_test_authoritative": {
+    "E04-smallobj-tuned": {
+      "mAP50": 0.1163,
+      "mAP50_95": 0.0396,
+      "precision": 0.3444,
+      "recall": 0.1639,
+      "per_class_mAP50": {
+        "MILCO": 0.0533,
+        "NOMBO": 0.1794
+      }
+    },
+    "E08-speckle-aug": {
+      "mAP50": 0.0763,
+      "mAP50_95": 0.0236,
+      "precision": 0.1849,
+      "recall": 0.1415,
+      "per_class_mAP50": {
+        "MILCO": 0.0383,
+        "NOMBO": 0.1143
+      }
+    },
+    "E09-final-speckle-full": {
+      "mAP50": 0.0812,
+      "mAP50_95": 0.0312,
+      "precision": 0.3106,
+      "recall": 0.0785,
+      "per_class_mAP50": {
+        "MILCO": 0.0432,
+        "NOMBO": 0.1192
+      }
+    }
+  },
+  "robustness_subset_120frames": {
+    "baseline": {
+      "E04_raw": {
+        "f1": 0.0606,
+        "recall": 0.0357
+      },
+      "E08_undertrained": {
+        "f1": 0.2358,
+        "recall": 0.3452
+      },
+      "E09_full_run": {
+        "f1": 0.2375,
+        "recall": 0.2262
+      }
+    },
+    "speckle=0.25": {
+      "E04_raw": {
+        "f1": 0.0,
+        "recall": 0.0
+      },
+      "E08_undertrained": {
+        "f1": 0.1558,
+        "recall": 0.1429
+      },
+      "E09_full_run": {
+        "f1": 0.1732,
+        "recall": 0.131
+      }
+    },
+    "speckle=0.5": {
+      "E04_raw": {
+        "f1": 0.0,
+        "recall": 0.0
+      },
+      "E08_undertrained": {
+        "f1": 0.0708,
+        "recall": 0.0476
+      },
+      "E09_full_run": {
+        "f1": 0.0566,
+        "recall": 0.0357
+      }
+    },
+    "speckle=1.0": {
+      "E04_raw": {
+        "f1": 0.0,
+        "recall": 0.0
+      },
+      "E08_undertrained": {
+        "f1": 0.0,
+        "recall": 0.0
+      },
+      "E09_full_run": {
+        "f1": 0.0,
+        "recall": 0.0
+      }
+    },
+    "blur=5": {
+      "E04_raw": {
+        "f1": 0.0444,
+        "recall": 0.0238
+      },
+      "E08_undertrained": {
+        "f1": 0.1656,
+        "recall": 0.3095
+      },
+      "E09_full_run": {
+        "f1": 0.2516,
+        "recall": 0.2381
+      }
+    },
+    "resolution_loss=0.5": {
+      "E04_raw": {
+        "f1": 0.0222,
+        "recall": 0.0119
+      },
+      "E08_undertrained": {
+        "f1": 0.1529,
+        "recall": 0.2976
+      },
+      "E09_full_run": {
+        "f1": 0.236,
+        "recall": 0.2262
+      }
+    },
+    "ping_dropout=0.15": {
+      "E04_raw": {
+        "f1": 0.0,
+        "recall": 0.0
+      },
+      "E08_undertrained": {
+        "f1": 0.1793,
+        "recall": 0.1548
+      },
+      "E09_full_run": {
+        "f1": 0.0522,
+        "recall": 0.0357
+      }
+    }
+  },
+  "conclusion": "A full 95-epoch convergence run (E09) did NOT close the gap to raw training on clean held-out data: mAP50 0.081 (E09) vs 0.116 (E04), recall 0.079 vs 0.164 -- E09's recall is actually LOWER than the undertrained E08 (0.142). This revises the Phase-2/3 hypothesis that E08's clean-accuracy deficit was 'just undertraining' -- it is a real, relatively stable accuracy/robustness tradeoff, not a training-budget artifact. On the robustness side, E09 improves over E08 on baseline, speckle=0.25, blur, and resolution-loss F1, but is WORSE than E08 under heavy ping-dropout and speckle=0.5 -- the robustness gain is real but uneven across degradation modes, not a uniform win either. DECISION: E04 remains PRIMARY (best on the authoritative full-test metrics that every other reported number in this project is measured against). E09 is kept and documented as a validated robustness-oriented ALTERNATIVE for deployments where noise robustness matters more than peak clean accuracy -- not promoted to primary."
+}

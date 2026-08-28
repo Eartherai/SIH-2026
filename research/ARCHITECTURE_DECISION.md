@@ -14,7 +14,7 @@ question throughout: *"What experiment proves this belongs here?"*
 | **Confidence calibration** | ECE improves on fit split; `calibrated:false` when unfit. | Thin fit basis. |
 | **Deduplication** | Turns detections into unique hazards; √N uncertainty reduction. | Sequence mode weak without geo. |
 | **Geolocation-or-refuse** | Refusal is enforced by test; error budget per fix. | Accuracy unvalidated (no nav data). |
-| **Speckle-augmented training (candidate primary)** | E08 converts 0% → ~41% recall retention under speckle; better on every degradation mode. | Clean full-test mAP 0.116→0.076; undertrained. **Not yet promoted to primary** — needs a longer run to recover clean ranking. |
+| **Speckle-augmented training (alternative checkpoint, not primary)** | E08/E09 improve recall retention under speckle from 0% to 13–14%, and most other degradation modes. Real, uneven — worse than E08 under heavy ping-dropout. | Full convergence (E09) confirmed the clean-accuracy cost is **not** a training-budget artifact: recall (0.079) came out lower than the undertrained E08's (0.142). Shipped as `models/aquashield_speckle_robust.pt`; **not promoted** — a genuine tradeoff, not a strict improvement. |
 
 ## REMOVED / REJECTED (with evidence)
 

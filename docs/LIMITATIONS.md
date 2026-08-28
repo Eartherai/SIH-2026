@@ -120,10 +120,16 @@ gain shift are tolerated.
 The irony is not lost on us: we implemented a Lee speckle filter precisely for
 this, and then measured that applying it makes detection worse overall (§9). The
 correct fix is to **train with speckle augmentation** rather than to filter at
-inference — and Phase 2 ran it (E08): under speckle σ=0.25 the raw model retains
-0% of its clean recall while the speckle-augmented model retains ~41%
-(`docs/BENCHMARKS.md` §10.2). So this weakness is now **measurably reduced**,
-though at a clean-mAP cost that a longer run still needs to recover.
+inference. We tried it twice: an undertrained attempt (E08) and then a full
+95-epoch run (E09) specifically to rule out undertraining as the explanation. It
+wasn't — under speckle σ=0.25 the raw model retains 0% of its clean recall while
+both augmented variants retain 13–14%, so the robustness weakness is
+**measurably, if unevenly, reduced**. But the clean-accuracy cost is **not** a
+training-budget artifact: E09's full-test recall (0.079) is *lower* than the
+undertrained E08's (0.142), even though precision recovered. This is a real,
+relatively stable accuracy/robustness tradeoff. We ship both: E04 stays primary,
+E09 is a separately-usable alternative checkpoint for noise-heavy deployments
+(`models/aquashield_speckle_robust.pt`, `docs/BENCHMARKS.md` §10.2).
 
 ## 11. The unsupervised anomaly branch does not work yet (evaluated, rejected)
 
