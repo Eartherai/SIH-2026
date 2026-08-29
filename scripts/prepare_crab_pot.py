@@ -65,6 +65,9 @@ def main() -> None:
                     help="fraction of RECORDINGS (not images) held out for val")
     ap.add_argument("--test-frac", type=float, default=0.15)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--splits", default="data/splits",
+                    help="where the split manifest is written; override in tests so a "
+                         "run against throwaway data cannot clobber the real manifest")
     args = ap.parse_args()
 
     raw = Path(args.raw)
@@ -161,7 +164,7 @@ def main() -> None:
     (out / "data.yaml").write_text(
         f"path: {out.resolve()}\ntrain: train/images\nval: val/images\ntest: test/images\n"
         f"nc: {len(CLASS_NAMES)}\nnames:\n" + "".join(f"  {i}: {n}\n" for i, n in enumerate(CLASS_NAMES)))
-    splits_dir = Path("data/splits")
+    splits_dir = Path(args.splits)
     splits_dir.mkdir(parents=True, exist_ok=True)
     (splits_dir / "crab_pot_recording_split.json").write_text(json.dumps(manifest, indent=2))
     print(f"\nwrote {out}/data.yaml")

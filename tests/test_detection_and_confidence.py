@@ -244,7 +244,8 @@ class TestCrabPotSplitLogic:
         root = Path(__file__).resolve().parents[1]
         result = subprocess.run(
             [sys.executable, str(root / "scripts" / "prepare_crab_pot.py"),
-             "--raw", str(raw), "--out", str(tmp_path / "out")],
+             "--raw", str(raw), "--out", str(tmp_path / "out"),
+             "--splits", str(tmp_path / "splits")],
             cwd=root, capture_output=True, text=True, timeout=30)
         assert "Set HF_TOKEN" not in result.stdout + result.stderr, (
             "prepare_crab_pot.py demanded a token even though the data was "

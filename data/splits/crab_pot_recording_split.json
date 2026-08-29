@@ -9,22 +9,22 @@
   ],
   "splits": {
     "train": {
-      "recordings": 0,
-      "images": 0,
-      "positive_images": 0,
-      "objects": 0
+      "recordings": 75,
+      "images": 4722,
+      "positive_images": 3522,
+      "objects": 5681
     },
     "val": {
-      "recordings": 0,
-      "images": 0,
-      "positive_images": 0,
-      "objects": 0
+      "recordings": 16,
+      "images": 1276,
+      "positive_images": 1041,
+      "objects": 2526
     },
     "test": {
-      "recordings": 1,
-      "images": 0,
-      "positive_images": 0,
-      "objects": 0
+      "recordings": 16,
+      "images": 676,
+      "positive_images": 564,
+      "objects": 1104
     }
   }
 }
