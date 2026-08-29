@@ -1,23 +1,28 @@
 #!/usr/bin/env python3
-"""Build the AQUA-SHIELD SIH 2026 deck: 6 slides -> PDF (submission format) + PNG + PPTX.
+"""Build the AQUA-SHIELD SIH 2026 Idea Submission deck -> PDF + PNG + PPTX.
 
-Design is authored in HTML/CSS (scripts/deck/slides.css) and rendered with a real
-browser engine, which gives typographic and layout control python-pptx cannot,
-and renders straight to the PDF that the SIH portal actually accepts.
+FORMAT: follows the official SIH2026-IDEA-Presentation-Format template
+(assets/SIH2026-IDEA-Presentation-Format.pptx) --
+  * white ground, black serif ALL-CAPS slide titles
+  * team-name oval top-left, SIH 2026 logo top-right
+  * #0070C0 footer bar with "@SIH Idea submission- Template" and slide number
+  * six slides including the title slide
+  * the mandated content pointers on each slide are kept verbatim as headings,
+    as the template's own instruction slide requires
 
-EVERY NUMBER IN THIS DECK IS EITHER:
-  (a) MEASURED  -- traceable to docs/BENCHMARKS.md / experiments/registry.jsonl,
-                   or to a live run of the dashboard, or
-  (b) TARGET    -- explicitly labelled as a goal we intend to prove, never as
-                   an achieved result.
-Nothing is estimated, rounded up, or invented. See docs/BENCHMARKS.md.
+Authored in HTML/CSS and rendered with a browser engine, which also produces
+the PDF that the SIH portal accepts (the portal takes PDF only).
+
+EVERY NUMBER IS EITHER:
+  (a) MEASURED -- traceable to docs/BENCHMARKS.md, experiments/registry.jsonl,
+      or a live run of the dashboard, or
+  (b) TARGET   -- explicitly labelled as a goal, never as an achieved result.
+Nothing is estimated or invented.
 
 Usage:
     .venv/bin/python3 scripts/deck/build_deck.py
 """
 from pathlib import Path
-import subprocess
-import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 DECK = ROOT / "scripts" / "deck"
@@ -40,96 +45,58 @@ def u(name: str) -> str:
     return (P / name).as_uri()
 
 
-def chrome(page_no: int, kicker: str, title: str, sub: str) -> str:
+def chrome(page_no: int, title: str, sub: str = "") -> str:
+    subhtml = f'<span class="sub">{sub}</span>' if sub else ""
     return f"""
-  <div class="logo-plate"><img src="{LOGO}" alt="Smart India Hackathon 2026"></div>
-  <div class="hdr">
-    <div class="kick">{kicker}</div>
-    <h1>{title}</h1>
-    <div class="sub">{sub}</div>
-  </div>
-  <div class="rule"></div>
-  <div class="foot">
-    <div><b>AQUA-SHIELD</b> &nbsp;·&nbsp; PS 26057 &nbsp;·&nbsp; MoES / NIOT &nbsp;·&nbsp;
-         Disaster Management &nbsp;·&nbsp; {TEAM_NAME}</div>
-    <div class="pg">{page_no} / 6</div>
-  </div>"""
+  <div class="sih-logo"><img src="{LOGO}" alt="Smart India Hackathon 2026"></div>
+  <div class="team-oval">{TEAM_NAME}</div>
+  <div class="slide-title">{title}{subhtml}</div>
+  <div class="footbar">@SIH Idea submission- Template<span class="pg">{page_no}</span></div>"""
 
 
 # ============================================================== SLIDE 1 =====
 S1 = f"""
 <div class="slide">
-  <div class="logo-plate"><img src="{LOGO}" alt="Smart India Hackathon 2026"></div>
+  <div class="sih-logo"><img src="{LOGO}" alt="Smart India Hackathon 2026"></div>
 
-  <div style="position:absolute; left:0; top:0; width:52%; height:100%;
-              padding:74px 0 0 56px;">
-    <div class="kick" style="font-size:14px;font-weight:700;letter-spacing:2.4px;
-         color:var(--cyan);text-transform:uppercase;">Smart India Hackathon 2026</div>
+  <div style="position:absolute;left:60px;top:44px;">
+    <div style="font-family:var(--serif);font-size:56px;font-weight:700;color:var(--navy);
+                line-height:1.02;">SMART INDIA HACKATHON 2026</div>
+  </div>
 
-    <div style="font-size:82px;font-weight:800;letter-spacing:-2.6px;line-height:1;
-                margin-top:16px;">AQUA<span style="color:var(--cyan);">-</span>SHIELD</div>
+  <div style="position:absolute;left:60px;top:190px;width:830px;">
+    <ul class="b" style="font-size:19.5px;">
+      <li style="margin-bottom:26px;font-size:22px;">
+        <b>Problem Statement ID</b> &ndash; <b>26057</b></li>
+      <li style="margin-bottom:26px;">
+        <b>Problem Statement Title</b> &ndash; AI-Powered Automated Underwater Marine
+        Debris and Anomaly Detection System using Side-Scan Sonar Imagery</li>
+      <li style="margin-bottom:26px;">
+        <b>Theme</b> &ndash; Disaster Management
+        <span style="color:var(--ink-3);">&nbsp;·&nbsp; Ministry of Earth Sciences (MoES) / NIOT</span></li>
+      <li style="margin-bottom:26px;"><b>PS Category</b> &ndash; Software</li>
+      <li style="margin-bottom:26px;"><b>Team ID</b> &ndash; {TEAM_ID}</li>
+      <li><b>Team Name (Registered on portal)</b> &ndash; {TEAM_NAME}</li>
+    </ul>
+  </div>
 
-    <div style="font-size:17px;color:var(--txt-2);margin-top:14px;line-height:1.45;
-                max-width:600px;">
-      Acoustic intelligence for underwater anomaly, debris &amp;
-      marine-hazard localization from side-scan sonar.
-    </div>
-
-    <div style="display:flex;gap:9px;margin-top:20px;">
-      <span class="chip k">Detect</span><span class="chip k">Verify</span>
-      <span class="chip k">Localize</span><span class="chip k">Act</span>
-    </div>
-
-    <div class="callout cy" style="margin-top:26px;max-width:625px;">
-      <b>The insight that shapes the whole system:</b> 74% of our sonar frames contain
-      no target at all. Precision — not recall — is the binding constraint.
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:11px;
-                margin-top:26px;max-width:625px;">
-      <div class="card" style="padding:12px 15px;">
-        <div style="font-size:10.5px;letter-spacing:1.4px;color:var(--txt-3);
-                    text-transform:uppercase;font-weight:700;">Problem Statement ID</div>
-        <div style="font-size:19px;font-weight:800;margin-top:3px;">26057</div>
-      </div>
-      <div class="card" style="padding:12px 15px;">
-        <div style="font-size:10.5px;letter-spacing:1.4px;color:var(--txt-3);
-                    text-transform:uppercase;font-weight:700;">PS Category</div>
-        <div style="font-size:19px;font-weight:800;margin-top:3px;">Software</div>
-      </div>
-      <div class="card" style="padding:12px 15px;">
-        <div style="font-size:10.5px;letter-spacing:1.4px;color:var(--txt-3);
-                    text-transform:uppercase;font-weight:700;">Theme</div>
-        <div style="font-size:19px;font-weight:800;margin-top:3px;">Disaster Management</div>
-      </div>
-      <div class="card" style="padding:12px 15px;">
-        <div style="font-size:10.5px;letter-spacing:1.4px;color:var(--txt-3);
-                    text-transform:uppercase;font-weight:700;">Team ID &nbsp;·&nbsp; Name</div>
-        <div style="font-size:19px;font-weight:800;margin-top:3px;">{TEAM_ID} · {TEAM_NAME}</div>
-      </div>
-    </div>
-
-    <div style="font-size:12.5px;color:var(--txt-3);margin-top:22px;max-width:625px;
-                line-height:1.5;">
-      Problem Statement — AI-powered automated underwater marine debris and anomaly
-      detection using side-scan sonar imagery &nbsp;·&nbsp; Ministry of Earth Sciences / NIOT
+  <div style="position:absolute;left:60px;bottom:44px;width:880px;">
+    <div class="box teal t-teal" style="padding:13px 17px;">
+      <span style="font-size:18px;font-weight:700;color:var(--teal);">AQUA-SHIELD</span>
+      <span style="font-size:15.5px;color:var(--ink-2);"> &nbsp;&mdash;&nbsp; Detect &rarr; Verify
+      &rarr; Localize &rarr; Act.&nbsp; A working, offline side-scan sonar pipeline that
+      does not just detect, but <b>verifies every detection against physical acoustic
+      evidence</b> before an operator ever sees it.</span>
     </div>
   </div>
 
-  <div style="position:absolute; right:0; top:0; width:47%; height:100%;">
+  <div style="position:absolute;right:54px;top:215px;width:565px;">
     <img src="{u('panel_sonar.png')}"
-         style="position:absolute;right:52px;top:128px;width:604px;border-radius:14px;
-                border:1px solid var(--line);
-                -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 15%,#000 100%);
-                mask-image:linear-gradient(90deg,transparent 0%,#000 15%,#000 100%);">
-    <div style="position:absolute;right:52px;top:760px;width:604px;">
-      <div style="font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;
-                  color:var(--cyan);font-weight:800;">Live system output</div>
-      <div style="font-size:12.5px;color:var(--txt-2);margin-top:6px;line-height:1.45;">
-        Real held-out survey frame <span class="mono">0460_2018</span>, processed by the
-        running prototype. Yellow = man-made, green = ambiguous — both accepted by the
-        verification stage before display.
-      </div>
+         style="width:100%;border:1.6px solid var(--blue);border-radius:6px;display:block;">
+    <div style="font-size:13px;color:var(--ink-3);margin-top:8px;line-height:1.35;
+                text-align:center;">
+      Live output of our running prototype on a real held-out survey frame
+      (<span class="mono">0460_2018</span>).<br>Yellow = man-made, green = ambiguous.
     </div>
   </div>
 </div>"""
@@ -138,225 +105,256 @@ S1 = f"""
 # ============================================================== SLIDE 2 =====
 S2 = f"""
 <div class="slide">
-  {chrome(2, "Idea &amp; Innovation", "Why the obvious approach fails here",
-          "Everyone optimises recall. On this data that is the wrong objective — and it is why sonar AI does not reach operators.")}
+  {chrome(2, "AQUA-SHIELD",
+          "Acoustic Intelligence for Underwater Anomaly, Debris &amp; Marine-Hazard Localization")}
   <div class="body">
-    <div class="fill" style="display:grid;grid-template-columns:1fr 1fr 1.06fr;gap:14px;">
+    <div class="fill" style="display:grid;grid-template-columns:1.08fr 1fr;gap:14px;">
 
-      <div class="card">
-        <div class="lbl coral">The problem</div>
-        <ul class="tight">
-          <li>Derelict fishing gear — <b>ghost nets</b> — keeps killing after it is
-              lost: entangling marine life, smothering reefs, fouling propellers.</li>
-          <li>Finding it means a human reading <b>thousands of km</b> of side-scan
-              sonar by eye — slow, fatiguing, inconsistent.</li>
-          <li>Seabed clutter — rocks, sand ripples, acoustic shadows — looks
-              exactly like a target.</li>
+      <div class="box" style="display:flex;flex-direction:column;">
+        <h2 class="ptr">Proposed Solution</h2>
+        <ul class="b">
+          <li><b>Ten-stage offline pipeline.</b> Ingest &rarr; quality control &rarr;
+              tiling &rarr; <span class="hb">YOLO11n detection</span> &rarr;
+              <span class="hi">physical verification</span> &rarr; calibration &rarr;
+              de-duplication &rarr; geolocation &rarr; priority &rarr; report.</li>
+          <li><b>Independent verification stage.</b> Every candidate is re-examined
+              against <span class="hi">10 features measured from the pixels</span> &mdash;
+              shadow coherence, local SNR, contrast, compactness, texture &mdash; that do
+              <i>not</i> depend on the detector's own opinion.</li>
+          <li><b>Calibrated confidence.</b> Platt scaling fitted on a held-out survey;
+              when unfitted, every hazard is stamped
+              <span class="mono ha">calibrated: false</span>.</li>
+          <li><b>Ranked hazard register.</b> The output is not a model file &mdash; it is a
+              prioritised, auditable list exported as
+              <span class="mono">GeoJSON / CSV / SQLite</span>, opening directly in QGIS.</li>
+          <li><b>Runs fully offline on a laptop.</b> No cloud, no per-image cost, no data
+              leaving the vessel.</li>
         </ul>
+        <div style="margin-top:12px;">
+          <div style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px;">
+            THE TEN PHYSICAL FEATURES THE VERIFIER MEASURES</div>
+          <span class="tag">shadow ratio</span><span class="tag">shadow side consistency</span>
+          <span class="tag">local SNR</span><span class="tag">contrast</span>
+          <span class="tag">compactness</span><span class="tag">aspect ratio</span>
+          <span class="tag">edge density</span><span class="tag">relative texture</span>
+          <span class="tag">area fraction</span><span class="tag">range position</span>
+        </div>
+
+        <div style="margin-top:14px;">
+          <div style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:7px;">
+            THE TEN STAGES &mdash; EACH SEPARATELY TESTABLE AND SEPARATELY ABLATED</div>
+          <div class="row"><div class="step " style="padding:5px 3px;"><div class="t" style="font-size:10px;line-height:1.15;">Ingest</div></div><div class="arw" style="flex:0 0 8px;font-size:11px;">&rsaquo;</div><div class="step " style="padding:5px 3px;"><div class="t" style="font-size:10px;line-height:1.15;">Quality<br>control</div></div><div class="arw" style="flex:0 0 8px;font-size:11px;">&rsaquo;</div><div class="step off" style="padding:5px 3px;"><div class="t" style="font-size:10px;line-height:1.15;">Pre-<br>process</div></div><div class="arw" style="flex:0 0 8px;font-size:11px;">&rsaquo;</div><div class="step " style="padding:5px 3px;"><div class="t" style="font-size:10px;line-height:1.15;">Tiling</div></div><div class="arw" style="flex:0 0 8px;font-size:11px;">&rsaquo;</div><div class="step " style="padding:5px 3px;"><div class="t" style="font-size:10px;line-height:1.15;">Detection</div></div><div class="arw" style="flex:0 0 8px;font-size:11px;">&rsaquo;</div><div class="step key" style="padding:5px 3px;"><div class="t" style="font-size:10px;line-height:1.15;">Verify</div></div><div class="arw" style="flex:0 0 8px;font-size:11px;">&rsaquo;</div><div class="step " style="padding:5px 3px;"><div class="t" style="font-size:10px;line-height:1.15;">Calibrate</div></div><div class="arw" style="flex:0 0 8px;font-size:11px;">&rsaquo;</div><div class="step " style="padding:5px 3px;"><div class="t" style="font-size:10px;line-height:1.15;">Dedup</div></div><div class="arw" style="flex:0 0 8px;font-size:11px;">&rsaquo;</div><div class="step " style="padding:5px 3px;"><div class="t" style="font-size:10px;line-height:1.15;">Geo-<br>locate</div></div><div class="arw" style="flex:0 0 8px;font-size:11px;">&rsaquo;</div><div class="step " style="padding:5px 3px;"><div class="t" style="font-size:10px;line-height:1.15;">Report</div></div></div>
+          <div style="font-size:11px;color:var(--ink-3);margin-top:7px;line-height:1.35;">
+            <span style="color:var(--teal);font-weight:700;">Teal</span> = our core
+            contribution. &nbsp;<span style="color:var(--amber);font-weight:700;">Dashed
+            amber</span> = built, measured, and <b>switched off by default because it made
+            detection worse</b> &mdash; we keep negative results rather than hiding them.
+          </div>
+        </div>
+
+        <div class="note b" style="margin-top:auto;">
+          <b>Status: a working prototype, not a concept.</b> It is trained, measured on
+          held-out surveys, covered by 117 passing tests &mdash; and every screenshot in
+          this deck is its live output.
+        </div>
       </div>
 
-      <div class="card">
-        <div class="lbl amber">What exists today — and its limit</div>
-        <table class="t">
-          <tr><th>System</th><th>Limitation</th></tr>
-          <tr><td>GhostVision<br><span style="font-size:10.5px;color:var(--txt-3);">JMSE 2025</span></td>
-              <td class="dim">Closest prior system. Licence unresolved (NOASSERTION) — cannot be reused.</td></tr>
-          <tr><td>sidescantools<br><span style="font-size:10.5px;color:var(--txt-3);">GPL-3.0</span></td>
-              <td class="dim">Sonar processing only. No detection, no verification.</td></tr>
-          <tr><td>Generic YOLO<br><span style="font-size:10.5px;color:var(--txt-3);">detector-only</span></td>
-              <td class="dim">Fires on empty seabed. No evidence, no calibration, no refusal.</td></tr>
-        </table>
-      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="box red" style="flex:1;display:flex;flex-direction:column;">
+          <h2 class="ptr red">How It Addresses the Problem</h2>
+          <div style="display:flex;align-items:center;gap:15px;margin-bottom:9px;">
+            <div style="font-size:54px;font-weight:800;color:var(--red);line-height:1;">74%</div>
+            <div style="font-size:14px;line-height:1.35;color:var(--ink-2);">
+              of frames in our held-out surveys contain <b>no target at all</b>
+              (473 of 612 &mdash; measured). The real difficulty is not finding objects, it
+              is <b>not crying wolf on empty seabed</b>.</div>
+          </div>
+          <ul class="b tight">
+            <li>A recall-tuned detector alarms constantly, the analyst stops trusting it,
+                and the system is abandoned. <span class="hi">Precision is the binding
+                constraint</span> &mdash; so we built a stage specifically to enforce it.</li>
+            <li>Replaces manual reading of thousands of km of sonar with a ranked register
+                the operator can audit, accept or reject.</li>
+            <li>Seabed clutter &mdash; rocks, sand ripples, acoustic shadows &mdash; is
+                rejected on physical evidence, not on a hand-tuned threshold.</li>
+          </ul>
+          <div style="margin-top:auto;padding-top:10px;display:flex;align-items:center;gap:15px;">
+            <div style="display:grid;grid-template-columns:repeat(20,11px);gap:3px;">
+              <span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#D8DFE6;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span><span style="width:11px;height:11px;border-radius:2px;display:inline-block;background:#C00000;"></span>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);line-height:1.35;">
+              <span style="color:#C00000;font-weight:700;">&#9632;</span> frames with a target<br>
+              <span style="color:#B6BEC6;font-weight:700;">&#9632;</span> empty seabed<br>
+              <span style="font-size:10.5px;">100 frames, to scale</span>
+            </div>
+          </div>
+        </div>
 
-      <div class="card" style="display:flex;flex-direction:column;justify-content:center;
-           border-color:rgba(34,211,238,0.42);">
-        <div class="lbl">Our insight</div>
-        <div style="font-size:76px;font-weight:800;color:var(--cyan);line-height:0.94;
-                    letter-spacing:-2.5px;">74%</div>
-        <div style="font-size:14px;color:var(--txt);margin-top:11px;line-height:1.45;">
-          of frames in our held-out surveys contain <b>no target at all</b>
-          (473 of 612 — measured).
-        </div>
-        <div style="font-size:13.5px;color:var(--txt-2);margin-top:12px;line-height:1.45;">
-          A recall-tuned detector alarms constantly on empty seabed, the analyst
-          stops trusting it, and the system is abandoned.
-          <span style="color:var(--cyan);font-weight:600;">Precision is the
-          binding constraint.</span>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:15px;">
-      <div class="lbl">Our answer — four things that are ours</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:13px;">
-        <div class="card" style="padding:14px 16px;">
-          <div style="font-size:22px;font-weight:800;color:var(--cyan);">01</div>
-          <div style="font-size:14px;font-weight:700;margin-top:6px;line-height:1.28;">
-            Independent physical verification</div>
-          <div style="font-size:11.5px;color:var(--txt-2);margin-top:6px;line-height:1.4;">
-            10 features measured from the pixels — shadow coherence, contrast,
-            compactness, texture — that do <i>not</i> depend on the detector's
-            own opinion. Fitted on a held-out survey.</div>
-        </div>
-        <div class="card" style="padding:14px 16px;">
-          <div style="font-size:22px;font-weight:800;color:var(--cyan);">02</div>
-          <div style="font-size:14px;font-weight:700;margin-top:6px;line-height:1.28;">
-            Confidence that means something</div>
-          <div style="font-size:11.5px;color:var(--txt-2);margin-top:6px;line-height:1.4;">
-            Platt calibration fitted on held-out data. When it is not fitted,
-            every hazard is stamped <span class="mono"
-            style="color:var(--amber);">calibrated: false</span> — never a
-            silently wrong number.</div>
-        </div>
-        <div class="card" style="padding:14px 16px;">
-          <div style="font-size:22px;font-weight:800;color:var(--cyan);">03</div>
-          <div style="font-size:14px;font-weight:700;margin-top:6px;line-height:1.28;">
-            Refusal as a feature</div>
-          <div style="font-size:11.5px;color:var(--txt-2);margin-top:6px;line-height:1.4;">
-            No navigation metadata → no coordinate. <span style="color:var(--amber);">null</span>,
-            plus the reason. A fabricated latitude exports cleanly to CSV and
-            sends a vessel to open water.</div>
-        </div>
-        <div class="card" style="padding:14px 16px;">
-          <div style="font-size:22px;font-weight:800;color:var(--cyan);">04</div>
-          <div style="font-size:14px;font-weight:700;margin-top:6px;line-height:1.28;">
-            Confidence ≠ Priority</div>
-          <div style="font-size:11.5px;color:var(--txt-2);margin-top:6px;line-height:1.4;">
-            “Is it real?” and “should you care?” are different questions, scored
-            separately, so a low-confidence large hazard is not buried.</div>
+        <div class="box teal" style="flex:1;">
+          <h2 class="ptr teal">Innovation &amp; Uniqueness</h2>
+          <ul class="b tight">
+            <li><b>Verification on independent physical evidence</b> &mdash; not a second
+                neural network agreeing with the first.</li>
+            <li><b>Refusal as a feature.</b> No navigation metadata &rarr; no coordinate.
+                We return <span class="mono ha">null</span> plus the reason. A fabricated
+                latitude exports cleanly to CSV and sends a vessel to open water.</li>
+            <li><b>Confidence &ne; Priority.</b> "Is it real?" and "should you care?" are
+                scored separately, so a low-confidence large hazard is not buried.</li>
+            <li><b>The verifier doubles as a diagnostic instrument.</b> Its fitted weights
+                gave acoustic shadow a <i>negative</i> weight &mdash; the opposite of the
+                physics. That exposed a real train/inference preprocessing mismatch in our
+                own pipeline; fixing it moved F1
+                <span class="mono hg">0.012 &rarr; 0.144</span>. A hand-tuned threshold
+                would have hidden the defect.</li>
+          </ul>
         </div>
       </div>
-    </div>
-
-    <div class="callout" style="margin-top:14px;">
-      <b>The verifier is a diagnostic instrument, not just a classifier.</b>
-      Its fitted weights gave acoustic shadow a large <i>negative</i> weight — the
-      opposite of the physics. That exposed a real defect: a preprocessing chain
-      applied at inference that the detector had never been trained on. Fixing the
-      mismatch moved F1 from <span class="mono">0.012 → 0.144</span> (measured) and
-      turned both shadow features positive. A hand-tuned threshold would have hidden it.
     </div>
   </div>
 </div>"""
 
 
 # ============================================================== SLIDE 3 =====
-def fstep(n, t, d, cls=""):
-    return (f'<div class="fstep {cls}"><div class="n">{n}</div>'
-            f'<div class="t">{t}</div><div class="d">{d}</div></div>')
+def step(t, d, cls=""):
+    return f'<div class="step {cls}"><div class="t">{t}</div><div class="d">{d}</div></div>'
 
 
-ARROW = '<div class="farrow">›</div>'
-
-PIPE = ARROW.join([
-    fstep("01", "Ingest", "SSS frames<br>+ nav / GeoTIFF"),
-    fstep("02", "Quality<br>control", "dyn. range, speckle,<br>dropout, water column"),
-    fstep("03", "Preprocess", "off by default —<br>measured, hurt", "off"),
-    fstep("04", "Tiling", "overlap, seam merge<br>by IoU / IoS"),
-    fstep("05", "Detection", "YOLO11n<br>2.58M params"),
-    fstep("06", "Verification", "10 physical features<br>→ logistic model", "key"),
-    fstep("07", "Calibration", "Platt, or stamped<br>uncalibrated"),
-    fstep("08", "Dedup", "repeat sightings<br>→ unique hazard"),
-    fstep("09", "Geolocate", "affine / per-ping nav<br>or refuse"),
-    fstep("10", "Report", "ranked register<br>GeoJSON · CSV"),
-])
+A = '<div class="arw">&rsaquo;</div>'
 
 S3 = f"""
 <div class="slide">
-  {chrome(3, "Technical Approach", "The real pipeline — ten stages, every one measured",
-          "Not “user → AI → result”. Each stage is separately testable, separately ablated, and can be switched off to measure what it contributes.")}
+  {chrome(3, "TECHNICAL APPROACH")}
   <div class="body">
+    <div class="fill" style="display:grid;grid-template-columns:0.60fr 1fr;gap:14px;">
 
-    <div class="flow" style="margin-bottom:15px;">{PIPE}</div>
+      <div style="display:flex;flex-direction:column;gap:11px;">
+        <div class="box violet" style="flex:1;display:flex;flex-direction:column;">
+          <h3 class="sec" style="color:var(--violet);">Technologies to be Used</h3>
+          <div style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin:6px 0 4px;">
+            Language &amp; machine learning</div>
+          <div><span class="tag v">Python 3.12</span><span class="tag v">PyTorch 2.13</span>
+               <span class="tag v">Ultralytics YOLO11n</span><span class="tag v">scikit-learn</span>
+               <span class="tag v">ONNX Runtime</span></div>
+          <div style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin:9px 0 4px;">
+            Sonar &amp; geospatial</div>
+          <div><span class="tag">OpenCV</span><span class="tag">NumPy</span>
+               <span class="tag">pyproj</span><span class="tag">GeoTIFF</span>
+               <span class="tag">GeoJSON &rarr; QGIS</span></div>
+          <div style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin:9px 0 4px;">
+            Application &amp; quality</div>
+          <div><span class="tag g">Streamlit console</span><span class="tag g">FastAPI REST</span>
+               <span class="tag g">SQLite register</span><span class="tag g">pytest &middot; 117 tests</span></div>
+          <div style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin:9px 0 4px;">
+            Compute targets</div>
+          <div><span class="tag a">Apple MPS</span><span class="tag a">CUDA</span>
+               <span class="tag a">CPU fallback</span><span class="tag a">Jetson-class edge (target)</span></div>
 
-    <div class="fill" style="display:grid;grid-template-columns:1.02fr 1fr 0.92fr;gap:14px;">
+          <div style="margin-top:auto;padding-top:13px;">
+            <div style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px;">
+              KEY TECHNICAL DECISIONS &mdash; AND WHY</div>
+            <table class="t" style="font-size:11.5px;">
+              <tr><td style="width:38%;"><b>YOLO11n</b>, not a<br>transformer detector</td>
+                  <td class="dim">2.58 M params fits edge hardware; reviewed DETR variants
+                      cost 2.6&times;&ndash;44&times; more for single-digit AP gains.</td></tr>
+              <tr><td><b>Logistic verifier</b>,<br>not a second CNN</td>
+                  <td class="dim">Inspectable weights, per-detection attribution &mdash; an
+                      operator can see <i>why</i> a candidate was rejected.</td></tr>
+            </table>
+          </div>
+        </div>
 
-      <div class="card">
-        <div class="lbl">Data — real, licensed, leakage-free</div>
-        <table class="t">
-          <tr><th>Dataset</th><th>Scale</th><th>Split by</th></tr>
-          <tr>
-            <td>MILCO / NOMBO<br><span style="font-size:10.5px;color:var(--green);">CC BY 4.0</span></td>
-            <td class="num">465 / 93 / 612<br><span style="font-size:10px;color:var(--txt-3);">frames · 191 test objects</span></td>
-            <td class="dim">acquisition<br>year</td>
-          </tr>
-          <tr>
-            <td>Derelict crab pot<br><span style="font-size:10.5px;color:var(--green);">CC BY-SA 4.0</span></td>
-            <td class="num">6,674 imgs<br><span style="font-size:10px;color:var(--txt-3);">9,311 objects · 107 recordings</span></td>
-            <td class="dim">recording<br>ID</td>
-          </tr>
-        </table>
-        <div class="callout cy" style="margin-top:12px;padding:9px 13px;font-size:12px;">
-          <b>Never a random split.</b> Consecutive sonar frames share seabed, gain
-          settings and often the same object — a random split leaks and inflates
-          every number. Train 2015+2010 → fit 2017 → test 2018+2021, asserted by a test.
+        <div class="box green">
+          <h3 class="sec green">Data &mdash; real, licensed, leakage-free</h3>
+          <table class="t" style="font-size:12.5px;">
+            <tr><th>Dataset</th><th>Scale</th><th>Split by</th></tr>
+            <tr><td>MILCO / NOMBO<br><span style="font-size:11px;color:var(--green);">CC BY 4.0</span></td>
+                <td class="mono">465 / 93 / 612 frames<br>
+                    <span style="font-size:10.5px;color:var(--ink-3);">191 test objects</span></td>
+                <td class="dim">acquisition<br>year</td></tr>
+            <tr><td>Derelict crab pot<br><span style="font-size:11px;color:var(--green);">CC BY-SA 4.0</span></td>
+                <td class="mono">6,674 images<br>
+                    <span style="font-size:10.5px;color:var(--ink-3);">9,311 objects &middot; 107 recordings</span></td>
+                <td class="dim">recording<br>ID</td></tr>
+          </table>
+          <div class="note" style="margin-top:9px;padding:7px 11px;font-size:12px;">
+            <b>Never a random split.</b> Consecutive sonar frames share seabed, gain
+            settings and often the same object &mdash; a random split leaks and inflates
+            every number. A unit test asserts the splits stay disjoint.
+          </div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="lbl violet">Core algorithm — the verification stage</div>
-        <div style="font-size:12.5px;color:var(--txt-2);line-height:1.45;margin-bottom:9px;">
-          Every detector candidate is re-examined against evidence measured
-          <b style="color:#fff;">from the pixels</b>, independent of the detector score:
-        </div>
-        <div>
-          <span class="chip">shadow ratio</span><span class="chip">shadow side consistency</span>
-          <span class="chip">local SNR</span><span class="chip">contrast</span>
-          <span class="chip">compactness</span><span class="chip">aspect ratio</span>
-          <span class="chip">edge density</span><span class="chip">relative texture</span>
-          <span class="chip">area fraction</span><span class="chip">range position</span>
-        </div>
-        <div style="margin-top:11px;font-size:12.5px;color:var(--txt-2);line-height:1.5;">
-          → <b style="color:#fff;">L2-regularised logistic regression</b>, fitted on the
-          held-out validation survey, with per-detection weight attribution so an
-          operator can see <i>why</i> a candidate was accepted or rejected.<br>
-          → <b style="color:#fff;">Platt calibration</b> maps the score to a probability;
-          identity transform + explicit flag when unfitted.
-        </div>
-      </div>
+      <div class="box" style="display:flex;flex-direction:column;">
+        <h3 class="sec">Methodology &amp; Process for Implementation</h3>
 
-      <div class="card">
-        <div class="lbl green">System &amp; stack</div>
-        <table class="t">
-          <tr><th>Layer</th><th>Component</th></tr>
-          <tr><td class="dim">Interface</td><td>Streamlit operator console</td></tr>
-          <tr><td class="dim">Service</td><td>FastAPI (REST)</td></tr>
-          <tr><td class="dim">Model</td><td>PyTorch 2.13 · MPS / CUDA / CPU</td></tr>
-          <tr><td class="dim">Store</td><td>SQLite hazard register</td></tr>
-          <tr><td class="dim">Edge</td><td>ONNX Runtime</td></tr>
-          <tr><td class="dim">Geo</td><td>pyproj · GeoJSON → QGIS</td></tr>
-        </table>
-        <div style="margin-top:11px;font-size:11.5px;color:var(--txt-3);line-height:1.45;">
-          Backend-swappable detector: the pipeline depends on an interface, not on
-          Ultralytics, so the AGPL-3.0 backend can be replaced without touching
-          the verification, calibration or reporting stages.
+        <div class="lane" style="margin-top:7px;">
+          <div class="name">1 &nbsp;&middot;&nbsp; Acquisition &amp; conditioning</div>
+          <div class="row">
+            {step("Ingest", "SSS frames + nav CSV /<br>GeoTIFF")}{A}
+            {step("Quality control", "dynamic range, speckle index,<br>dropout, water column")}{A}
+            {step("Preprocess", "OFF by default &mdash; measured<br>3 ways, it hurt every time", "off")}{A}
+            {step("Tiling", "640 px overlap, seam merge<br>by IoU / IoS")}
+          </div>
         </div>
-      </div>
-    </div>
 
-    <div class="card" style="margin-top:13px;padding:12px 17px;">
-      <div style="display:flex;align-items:center;gap:11px;">
-        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--cyan);
-                    text-transform:uppercase;white-space:nowrap;">I/O contract</div>
-        <div style="flex:1;display:flex;align-items:center;gap:8px;font-size:11.5px;">
-          <span class="chip mono" style="margin:0;">SSS frame 1024&times;1024 + nav CSV / GeoTIFF</span>
-          <span style="color:var(--cyan-dim);">&rsaquo;</span>
-          <span class="chip mono" style="margin:0;">640px tiles</span>
-          <span style="color:var(--cyan-dim);">&rsaquo;</span>
-          <span class="chip mono" style="margin:0;">boxes + class + raw score</span>
-          <span style="color:var(--cyan-dim);">&rsaquo;</span>
-          <span class="chip mono k" style="margin:0;">10-feature vector &rarr; p(real)</span>
-          <span style="color:var(--cyan-dim);">&rsaquo;</span>
-          <span class="chip mono" style="margin:0;">hazard record</span>
-          <span style="color:var(--cyan-dim);">&rsaquo;</span>
-          <span class="chip mono" style="margin:0;">GeoJSON &middot; CSV &middot; SQLite</span>
+        <div class="lane teal" style="margin-top:17px;">
+          <div class="name">2 &nbsp;&middot;&nbsp; Detection &amp; verification &mdash; the core contribution</div>
+          <div class="row">
+            {step("Detection", "YOLO11n &middot; 2.58 M params<br>6.3 GFLOPs")}{A}
+            {step("10 physical features", "shadow ratio &middot; shadow side &middot; SNR &middot;<br>contrast &middot; compactness &middot; texture &hellip;", "key")}{A}
+            {step("Logistic verifier", "L2-regularised, fitted on a<br>held-out survey", "key")}{A}
+            {step("Calibration", "Platt &rarr; probability, or<br>stamped uncalibrated")}
+          </div>
         </div>
-      </div>
-      <div style="font-size:11px;color:var(--txt-3);margin-top:9px;line-height:1.4;">
-        <b style="color:var(--txt-2);">hazard record</b> =
-        <span class="mono">{{id, class, level1, confidence, calibrated, priority, priority_band,
-        lat, lon, uncertainty_m, observations, evidence[10], provenance}}</span> —
-        every field an operator needs to act, audit, or reject the call.
+
+        <div class="lane green" style="margin-top:17px;">
+          <div class="name">3 &nbsp;&middot;&nbsp; Fusion, localization &amp; action</div>
+          <div class="row">
+            {step("De-duplication", "repeat sightings &rarr;<br>one unique hazard")}{A}
+            {step("Geolocation", "GeoTIFF affine / per-ping nav<br><b>or refuse</b>")}{A}
+            {step("Priority scoring", "separate from confidence")}{A}
+            {step("Report", "ranked register &rarr;<br>GeoJSON &middot; CSV &middot; SQLite")}
+          </div>
+        </div>
+
+        <div class="box t-grey grey" style="margin-top:17px;padding:9px 13px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;">
+            <b style="color:var(--navy);">I/O CONTRACT</b>
+            <span class="mono">SSS frame 1024&times;1024 + nav</span><span style="color:var(--blue);">&rsaquo;</span>
+            <span class="mono">640 px tiles</span><span style="color:var(--blue);">&rsaquo;</span>
+            <span class="mono">boxes + class + raw score</span><span style="color:var(--blue);">&rsaquo;</span>
+            <span class="mono" style="color:var(--teal);font-weight:700;">10-feature vector &rarr; p(real)</span>
+            <span style="color:var(--blue);">&rsaquo;</span>
+            <span class="mono">hazard record</span><span style="color:var(--blue);">&rsaquo;</span>
+            <span class="mono">GeoJSON &middot; CSV</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:6px;line-height:1.35;">
+            <b>hazard record</b> = <span class="mono">{{id, class, level1, confidence,
+            calibrated, priority, priority_band, lat, lon, uncertainty_m, observations,
+            evidence[10], provenance}}</span> &mdash; every field an operator needs to act
+            on, audit, or reject the call.
+          </div>
+        </div>
+
+        <div style="margin-top:15px;flex:1;min-height:0;display:flex;flex-direction:column;">
+          <h3 class="sec teal" style="margin-bottom:6px;">Working prototype &mdash; the operator console</h3>
+          <div style="display:grid;grid-template-columns:1fr 1.42fr;gap:11px;flex:1;min-height:0;">
+            <div style="display:flex;flex-direction:column;min-height:0;">
+              <img src="{u('panel_stats.png')}"
+                   style="display:block;width:100%;border:1px solid var(--rule);border-radius:4px;">
+              <div class="cap">Run summary: 8 frames &rarr; 2 raw candidates &rarr;
+                2 unique hazards &rarr; 1 HIGH priority.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;min-height:0;">
+              <img src="{u('panel_register.png')}"
+                   style="display:block;width:100%;border:1px solid var(--rule);border-radius:4px;">
+              <div class="cap">The hazard register. This survey ships no navigation, so
+                <span class="mono">lat / lon / &plusmn;m</span> come back
+                <span class="mono">None</span> &mdash; the system
+                <b>refuses to invent a coordinate</b> rather than guessing.</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -366,128 +364,108 @@ S3 = f"""
 # ============================================================== SLIDE 4 =====
 S4 = f"""
 <div class="slide">
-  {chrome(4, "Feasibility &amp; Viability", "It runs today — and this is how we will prove it",
-          "Left: the actual prototype, actual output, on held-out data. Right: the metrics we commit to hitting, stated as targets, not claims.")}
+  {chrome(4, "FEASIBILITY AND VIABILITY")}
   <div class="body">
-    <div style="display:grid;grid-template-columns:1.16fr 1fr;gap:15px;height:100%;">
+    <div class="fill" style="display:grid;grid-template-columns:1fr 1.04fr;gap:14px;">
 
       <div style="display:flex;flex-direction:column;gap:11px;">
-        <div class="card" style="padding:13px 15px;">
-          <div class="lbl">Hero demo — one deterministic 90-second run</div>
-          <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;">
-            <span class="chip" style="margin:0;">8 held-out frames</span>
-            <span style="color:var(--cyan-dim);">›</span>
-            <span class="chip" style="margin:0;">QC</span>
-            <span style="color:var(--cyan-dim);">›</span>
-            <span class="chip" style="margin:0;">2 raw candidates</span>
-            <span style="color:var(--cyan-dim);">›</span>
-            <span class="chip k" style="margin:0;">verify</span>
-            <span style="color:var(--cyan-dim);">›</span>
-            <span class="chip" style="margin:0;">2 hazards</span>
-            <span style="color:var(--cyan-dim);">›</span>
-            <span class="chip" style="margin:0;">1 HIGH</span>
-            <span style="color:var(--cyan-dim);">›</span>
-            <span class="chip" style="margin:0;">export</span>
+        <div class="box teal" style="flex:1;display:flex;flex-direction:column;">
+          <h2 class="ptr teal">Analysis of the Feasibility</h2>
+          <div style="font-size:13.5px;color:var(--ink-2);margin-bottom:9px;line-height:1.35;">
+            <b>It already runs.</b> A live run on 8 held-out frames:
+            8 frames &rsaquo; 2 raw candidates &rsaquo; verify &rsaquo; 2 unique hazards
+            &rsaquo; 1 HIGH priority, at 27 ms per frame.
           </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:0.92fr 1fr;gap:12px;flex:1;min-height:0;">
-          <div class="shotwrap" style="display:flex;flex-direction:column;min-height:0;">
-            <img src="{u('panel_sonar.png')}"
-                 style="display:block;width:100%;min-height:0;object-fit:contain;
-                        border-radius:10px;border:1px solid var(--line);">
-            <div class="shotcap">Frame <span class="mono">0460_2018</span> — live output of
-              the running system, not a mockup.</div>
-          </div>
-          <div class="card" style="padding:14px 16px;">
-            <div class="lbl" style="margin-bottom:9px;">What the operator is shown</div>
-            <div style="font-size:13px;line-height:1.5;">
-              <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:9px;">
-                <span style="width:11px;height:11px;border-radius:3px;background:#F2C230;
-                             display:inline-block;flex:0 0 11px;"></span>
-                <div><b>MILCO</b> · mine-like object<br>
-                  <span style="color:var(--txt-2);">confidence
-                  <b style="color:var(--green);">77.0%</b> · band HIGH · priority 58.7</span></div>
-              </div>
-              <div style="display:flex;align-items:baseline;gap:8px;">
-                <span style="width:11px;height:11px;border-radius:3px;background:#5FD35F;
-                             display:inline-block;flex:0 0 11px;"></span>
-                <div><b>NOMBO</b> · bottom object uncertain<br>
-                  <span style="color:var(--txt-2);">confidence
-                  <b style="color:var(--amber);">39.5%</b> · band LOW · priority 33.2</span></div>
-              </div>
+          <div style="display:grid;grid-template-columns:0.9fr 1fr;gap:10px;flex:1;min-height:0;">
+            <div>
+              <img src="{u('panel_sonar.png')}"
+                   style="display:block;width:100%;border:1px solid var(--rule);border-radius:4px;">
+              <div class="cap">Live prototype output, frame
+                <span class="mono">0460_2018</span> &mdash; not a mockup.</div>
             </div>
-            <div style="font-size:11.5px;color:var(--txt-3);margin-top:12px;line-height:1.45;
-                        border-top:1px solid var(--line-soft);padding-top:10px;">
-              Both survived the verification stage. NOMBO is reported as
-              <i>uncertain</i> rather than suppressed — the operator decides, with the
-              evidence and a calibrated number in front of them.
+            <div>
+              <table class="t" style="font-size:12.5px;">
+                <tr><th colspan="2">Measured on this machine</th></tr>
+                <tr><td>MPS inference</td><td class="meas">21.4 ms</td></tr>
+                <tr><td>ONNX export</td><td class="meas">10.6 MB &middot; 8.5 ms</td></tr>
+                <tr><td>Throughput</td><td class="meas">37.4 frames/s</td></tr>
+                <tr><td>Peak memory</td><td class="meas">640 MB</td></tr>
+                <tr><td>Test suite</td><td class="meas">117 passing</td></tr>
+              </table>
+              <div class="cap" style="margin-top:6px;">Apple M5, 24 GB &mdash; a laptop, not
+                a cluster. Reproducible from <span class="mono">experiments/</span>.</div>
             </div>
           </div>
         </div>
 
-        <div class="shotwrap">
-          <img class="shot" src="{u('panel_register.png')}">
-          <div class="shotcap"><b style="color:var(--amber);">Refusal, visible in the
-            product:</b> this survey ships no navigation, so lat / lon / ±m come back
-            <span class="mono">None</span> — the system declines to invent a coordinate.</div>
+        <div class="box">
+          <h3 class="sec">Verification stage &mdash; measured effect (612 held-out frames, 473 empty)</h3>
+          <table class="t" style="font-size:12.5px;">
+            <tr><th>Configuration</th><th class="c">Precision</th><th class="c">True positives</th>
+                <th class="c">Falsely-alarmed frames</th></tr>
+            <tr><td>Detector only</td><td class="c mono">0.247</td><td class="c mono">21</td>
+                <td class="c mono">37 / 473</td></tr>
+            <tr><td>+ hand-written rules</td><td class="c mono">0.300</td><td class="c mono">12</td>
+                <td class="c mono">18 / 473</td></tr>
+            <tr class="ours"><td><b>+ learned verification</b></td><td class="c meas">0.322</td>
+                <td class="c meas">19</td><td class="c meas">25 / 473</td></tr>
+          </table>
+          <div class="cap" style="margin-top:5px;">Hand-written rules buy quiet by
+            discarding targets (21 &rarr; 12). The learned verifier keeps <b>19 of 21</b>
+            while cutting falsely-alarmed frames by <b>32%</b>. That gap is the case for
+            fitting the filter rather than tuning thresholds.</div>
         </div>
-
       </div>
 
       <div style="display:flex;flex-direction:column;gap:11px;">
-        <div class="card" style="flex:1;">
-          <div class="lbl">Target validation — what we will prove at the finals</div>
-          <table class="t">
-            <tr>
-              <th style="width:40%;">Metric that matters</th>
-              <th style="width:30%;">Measured today</th>
-              <th style="width:30%;">Target</th>
-            </tr>
-            <tr><td>False-alarm rate on target-free frames</td>
-                <td class="meas">25 / 473 &nbsp;(5.3%)</td><td class="tgt">≤ 2%</td></tr>
-            <tr><td>Precision @ IoU 0.3</td>
-                <td class="meas">0.322</td><td class="tgt">≥ 0.60</td></tr>
-            <tr><td>Recall @ IoU 0.3</td>
-                <td class="meas">0.099</td><td class="tgt">≥ 0.45</td></tr>
+        <div class="box green" style="flex:1;">
+          <h3 class="sec green">Target validation &mdash; what we will prove at the finals</h3>
+          <table class="t" style="font-size:12.5px;">
+            <tr><th style="width:42%;">Metric that matters</th>
+                <th style="width:31%;">Measured today</th><th style="width:27%;">Target</th></tr>
+            <tr><td>False alarms on target-free frames</td>
+                <td class="meas">25 / 473 (5.3%)</td><td class="tgt">&le; 2%</td></tr>
+            <tr><td>Precision @ IoU 0.3</td><td class="meas">0.322</td><td class="tgt">&ge; 0.60</td></tr>
+            <tr><td>Recall @ IoU 0.3</td><td class="meas">0.099</td><td class="tgt">&ge; 0.45</td></tr>
             <tr><td>Ghost-gear detection, mAP50</td>
-                <td class="meas">0.323 <span style="color:var(--txt-3);font-size:10px;">raw, 1 run</span></td>
-                <td class="tgt">≥ 0.55</td></tr>
-            <tr><td>Confidence calibration error (ECE)</td>
-                <td class="dim">fitted, not yet reported</td><td class="tgt">≤ 0.05</td></tr>
+                <td class="meas">0.323 <span style="color:var(--ink-3);font-size:10.5px;">raw, 1 run</span></td>
+                <td class="tgt">&ge; 0.55</td></tr>
+            <tr><td>Calibration error (ECE)</td><td class="dim">fitted, not yet reported</td>
+                <td class="tgt">&le; 0.05</td></tr>
             <tr><td>Geolocation error (CEP)</td>
-                <td class="dim">not measurable — no nav<br>in available data</td><td class="tgt">≤ 10 m</td></tr>
-            <tr><td>Inference latency / frame</td>
-                <td class="meas">21.4 ms MPS · 8.5 ms ONNX</td><td class="tgt">≤ 30 ms edge</td></tr>
-            <tr><td>Sustained throughput</td>
-                <td class="meas">37.4 frames/s</td><td class="tgt">≥ 30 f/s on edge</td></tr>
+                <td class="dim">not measurable &mdash; no nav<br>in available data</td>
+                <td class="tgt">&le; 10 m</td></tr>
+            <tr><td>Inference latency / frame</td><td class="meas">21.4 ms MPS</td>
+                <td class="tgt">&le; 30 ms edge</td></tr>
           </table>
-          <div style="margin-top:10px;font-size:11px;color:var(--txt-3);line-height:1.45;">
-            <b style="color:var(--green);">Measured</b> = reproducible from
-            <span class="mono">experiments/</span> on held-out surveys.
-            <b style="color:var(--cyan);">Target</b> = a goal, not a result. We publish
-            both columns so the gap is visible rather than hidden.
+          <div class="note g" style="margin-top:9px;padding:7px 11px;font-size:12px;">
+            <b>Measured</b> = reproducible from <span class="mono">experiments/</span> on
+            held-out surveys. <b>Target</b> = a goal, not a result. We publish both columns
+            so the gap is visible rather than hidden.
+            <b>Baselines we will measure against:</b> detector-only &middot; hand-written
+            rule filter &middot; YOLO11s / RT-DETR at equal compute.
           </div>
         </div>
 
-        <div class="card" style="padding:13px 15px;">
-          <div class="lbl amber">Baselines we will measure against</div>
-          <div style="font-size:12px;color:var(--txt-2);line-height:1.5;">
-            detector-only (no verification) &nbsp;·&nbsp; hand-written rule filter
-            &nbsp;·&nbsp; YOLO11s / RT-DETR at equal compute &nbsp;·&nbsp; published
-            SSS detectors on their own reported splits.
-          </div>
-        </div>
-
-        <div class="card" style="padding:13px 15px;">
-          <div class="lbl coral">Risks — and the mitigation already built</div>
-          <table class="t" style="font-size:12px;">
-            <tr><td style="width:47%;">Scarce coastal SSS labels</td>
-                <td class="dim">leakage-free recording-level splits; honest reporting</td></tr>
+        <div class="box amber">
+          <h3 class="sec amber">Potential challenges &amp; risks &rarr; strategies for overcoming them</h3>
+          <table class="t" style="font-size:12.5px;">
+            <tr><th style="width:38%;">Challenge / risk</th><th>Strategy &mdash; already built</th></tr>
+            <tr><td>Scarce labelled coastal SSS data</td>
+                <td class="dim">Leakage-free recording-level splits; two licensed datasets;
+                    honest reporting instead of inflated splits.</td></tr>
+            <tr><td>Detection degrades under speckle noise</td>
+                <td class="dim">Noise-robust checkpoint trained and shipped separately,
+                    labelled as a trade-off rather than silently swapped in.</td></tr>
             <tr><td>Detector backend is AGPL-3.0</td>
-                <td class="dim">interface-isolated; ONNX path is backend-free</td></tr>
-            <tr><td>Speckle noise degrades detection</td>
-                <td class="dim">noise-robust checkpoint trained + shipped separately</td></tr>
+                <td class="dim">Isolated behind an interface; the ONNX export path is
+                    backend-independent.</td></tr>
+            <tr><td>Edge compute is constrained on an AUV</td>
+                <td class="dim">10.6 MB ONNX model measured at 8.5 ms &mdash; sized for
+                    Jetson-class hardware.</td></tr>
+            <tr><td>Missing navigation metadata</td>
+                <td class="dim">The system refuses to emit a coordinate and states why,
+                    rather than guessing.</td></tr>
           </table>
         </div>
       </div>
@@ -499,96 +477,115 @@ S4 = f"""
 # ============================================================== SLIDE 5 =====
 S5 = f"""
 <div class="slide">
-  {chrome(5, "Impact &amp; Benefits", "From raw sonar to a tasked cleanup vessel",
-          "The deliverable is not a model file. It is a ranked, geolocated, auditable hazard register an operator can act on the same day.")}
+  {chrome(5, "IMPACT AND BENEFITS")}
   <div class="body">
-    <div class="fill" style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+    <div class="fill" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
 
-      <div class="card">
-        <div class="lbl">What changes operationally</div>
-        <div style="display:flex;align-items:center;gap:9px;margin:4px 0 14px;">
-          <div style="flex:1;border:1px solid var(--line);border-radius:9px;padding:10px;
-                      text-align:center;background:rgba(248,113,113,0.08);">
-            <div style="font-size:11.5px;color:var(--coral);font-weight:700;">TODAY</div>
-            <div style="font-size:12.5px;margin-top:4px;line-height:1.3;">analyst scrolls<br>raw imagery</div>
+      <div style="display:flex;flex-direction:column;gap:11px;">
+        <div class="box">
+          <h2 class="ptr">Potential Impact on the Target Audience</h2>
+          <div style="display:flex;align-items:stretch;gap:8px;margin:2px 0 11px;">
+            <div class="box red t-red" style="flex:1;text-align:center;padding:9px 7px;">
+              <div style="font-size:11.5px;font-weight:700;color:var(--red);">TODAY</div>
+              <div style="font-size:12.5px;margin-top:3px;line-height:1.25;">analyst scrolls<br>raw sonar imagery</div>
+            </div>
+            <div class="arw" style="align-self:center;font-size:19px;">&rsaquo;</div>
+            <div class="box teal t-teal" style="flex:1.3;text-align:center;padding:9px 7px;">
+              <div style="font-size:11.5px;font-weight:700;color:var(--teal);">WITH AQUA-SHIELD</div>
+              <div style="font-size:12.5px;margin-top:3px;line-height:1.25;">ranked hazard register,<br>evidence attached</div>
+            </div>
+            <div class="arw" style="align-self:center;font-size:19px;">&rsaquo;</div>
+            <div class="box green t-green" style="flex:1;text-align:center;padding:9px 7px;">
+              <div style="font-size:11.5px;font-weight:700;color:var(--green);">ACTION</div>
+              <div style="font-size:12.5px;margin-top:3px;line-height:1.25;">GeoJSON &rarr; QGIS,<br>vessel tasked</div>
+            </div>
           </div>
-          <div style="color:var(--cyan);font-size:19px;">›</div>
-          <div style="flex:1.35;border:1px solid var(--cyan);border-radius:9px;padding:10px;
-                      text-align:center;background:rgba(34,211,238,0.09);">
-            <div style="font-size:11.5px;color:var(--cyan);font-weight:700;">WITH AQUA-SHIELD</div>
-            <div style="font-size:12.5px;margin-top:4px;line-height:1.3;">ranked hazard register,<br>evidence attached</div>
-          </div>
-          <div style="color:var(--cyan);font-size:19px;">›</div>
-          <div style="flex:1;border:1px solid var(--line);border-radius:9px;padding:10px;
-                      text-align:center;background:rgba(74,222,128,0.08);">
-            <div style="font-size:11.5px;color:var(--green);font-weight:700;">ACTION</div>
-            <div style="font-size:12.5px;margin-top:4px;line-height:1.3;">GeoJSON → QGIS<br>vessel tasked</div>
-          </div>
+          <table class="t" style="font-size:12.5px;">
+            <tr><th style="width:33%;">Beneficiary</th><th>Impact</th></tr>
+            <tr><td><b>MoES / NIOT</b><br><span style="font-size:10.5px;color:var(--ink-3);">survey &amp; cleanup operations</span></td>
+                <td class="dim">Direct fit to the problem statement's own agency; runs
+                    offline on survey hardware already aboard.</td></tr>
+            <tr><td><b>Fisheries &amp; coastal management</b></td>
+                <td class="dim">Ghost gear keeps killing catch and habitat long after it is
+                    lost; early detection breaks that cycle.</td></tr>
+            <tr><td><b>Ports &amp; navigation safety</b></td>
+                <td class="dim">Mine-like and man-made bottom objects flagged and
+                    prioritised before they foul a channel.</td></tr>
+            <tr><td><b>Environmental researchers</b></td>
+                <td class="dim">Auditable, licence-clean datasets and a reproducible
+                    experiment registry.</td></tr>
+          </table>
         </div>
-        <ul class="tight" style="margin-bottom:12px;">
-          <li>Every hazard carries its <b>evidence, calibrated confidence and
-              provenance</b> — an operator can audit a decision, not just accept it.</li>
-          <li>Repeat sightings are merged into unique hazards; positional
-              uncertainty tightens by ~√N over repeat fixes.</li>
-          <li class="amber">We do <b>not</b> claim a percentage of analyst time saved.
-              That requires a user study we have not run.</li>
-        </ul>
-        <img class="shot" src="{u('panel_geo_table.png')}">
-        <div class="shotcap">The exported register, from the running system: real
-          coordinates, a per-hazard uncertainty in metres, and a priority band —
-          this is what a cleanup vessel is tasked from.</div>
+
+        <div class="box violet">
+          <h3 class="sec" style="color:var(--violet);">Deployment &amp; scalability &mdash; offline-first by design</h3>
+          <ul class="b tight">
+            <li><b>Today:</b> runs on a single laptop (Apple M5, 24 GB), fully offline.</li>
+            <li><b>Edge:</b> 10.6 MB ONNX export measured at 8.5 ms &mdash; sized for a
+                Jetson aboard an AUV or survey launch.</li>
+            <li><b>Fleet:</b> FastAPI + SQLite register scales the same pipeline from one
+                operator console to a shore-side survey fleet.</li>
+            <li><span class="ha"><b>Not yet:</b></span> never run on a Jetson or a live AUV.
+                That is the next milestone, and we state it as a target rather than an
+                achievement.</li>
+          </ul>
+        </div>
       </div>
 
-      <div class="card">
-        <div class="lbl green">Who it serves</div>
-        <table class="t">
-          <tr><th>Beneficiary</th><th>Benefit</th></tr>
-          <tr><td>MoES / NIOT<br><span style="font-size:10.5px;color:var(--txt-3);">survey &amp; cleanup ops</span></td>
-              <td class="dim">Direct fit to the problem statement's own agency; runs on survey hardware already aboard.</td></tr>
-          <tr><td>Fisheries &amp;<br>coastal management</td>
-              <td class="dim">Ghost gear keeps killing catch and habitat long after loss; early detection breaks that cycle.</td></tr>
-          <tr><td>Ports &amp; navigation<br>safety</td>
-              <td class="dim">Mine-like and man-made bottom objects flagged and prioritised before they foul a channel.</td></tr>
-          <tr><td>Environmental<br>research</td>
-              <td class="dim">Auditable, licence-clean dataset and reproducible experiment registry.</td></tr>
-        </table>
-        <div class="callout cy" style="margin-top:15px;">
-          <b>Deployment context.</b> The georeferenced run above places hazards at
-          12.92&deg;N, 80.34&deg;E — off the Tamil Nadu coast, NIOT's own operating area.
-          The navigation track in that demo is <b>synthetic</b>, and the product says so
-          on screen: we are showing the geolocation path works end to end, not claiming
-          a validated fix.
+      <div style="display:flex;flex-direction:column;gap:11px;">
+        <div class="box green">
+          <h2 class="ptr green">Benefits of the Solution</h2>
+          <table class="t" style="font-size:12.5px;">
+            <tr><th style="width:23%;">Dimension</th><th>Benefit</th></tr>
+            <tr><td><b style="color:var(--green);">Environmental</b></td>
+                <td class="dim">Faster location of ghost nets and derelict gear that keep
+                    entangling marine life and smothering reefs after they are lost.</td></tr>
+            <tr><td><b style="color:var(--blue);">Economic</b></td>
+                <td class="dim">No cloud inference, no per-image API fee, no data egress
+                    &mdash; the marginal cost of one more survey is the electricity to run
+                    a laptop already aboard.</td></tr>
+            <tr><td><b style="color:var(--violet);">Operational</b></td>
+                <td class="dim">32% fewer falsely-alarmed frames while keeping 19 of 21 true
+                    positives (measured) &mdash; the analyst reviews a ranked register
+                    instead of raw imagery.</td></tr>
+            <tr><td><b style="color:var(--teal);">Safety</b></td>
+                <td class="dim">Mine-like and man-made hazards prioritised before a vessel
+                    or diver encounters them.</td></tr>
+            <tr><td><b style="color:var(--amber);">Social &amp;<br>institutional</b></td>
+                <td class="dim">Every hazard carries evidence, calibrated confidence and
+                    provenance, so a decision can be audited &mdash; not merely trusted.</td></tr>
+          </table>
         </div>
-        <div style="margin-top:14px;font-size:12.5px;color:var(--txt-2);line-height:1.5;">
-          <b style="color:#fff;">Cost model:</b> no cloud inference, no per-image API fee,
-          no data egress. The marginal cost of processing one more survey is the
-          electricity to run a laptop that is already aboard.
-        </div>
-      </div>
-    </div>
 
-    <div style="margin-top:15px;">
-      <div class="lbl">Deployment &amp; scalability — offline-first by design</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:13px;">
-        <div class="card" style="padding:14px 16px;">
-          <div class="stat"><div class="v cyan">Laptop</div>
-            <div class="k">Runs today on an Apple M5, 24 GB — fully offline. No cloud, no
-              per-image cost, no data leaving the vessel.</div></div>
-        </div>
-        <div class="card" style="padding:14px 16px;">
-          <div class="stat"><div class="v cyan">10.6 <span style="font-size:17px;">MB</span></div>
-            <div class="k">ONNX export, measured at 8.5 ms inference — sized for
-              Jetson-class edge hardware aboard an AUV or survey launch.</div></div>
-        </div>
-        <div class="card" style="padding:14px 16px;">
-          <div class="stat"><div class="v cyan">REST</div>
-            <div class="k">FastAPI service + SQLite register: the same pipeline scales
-              from one operator console to a shore-side survey fleet.</div></div>
-        </div>
-        <div class="card" style="padding:14px 16px;">
-          <div class="stat"><div class="v amber">Not yet</div>
-            <div class="k">Never run on a Jetson or a live AUV. That is the next
-              milestone, and it is a target — not something we claim today.</div></div>
+        <div class="box" style="flex:1;display:flex;flex-direction:column;">
+          <h3 class="sec">The exported hazard register &mdash; from the running system</h3>
+          <img class="shot" src="{u('panel_geo_table.png')}">
+          <div class="cap">Real coordinates, per-hazard uncertainty in metres, and a
+            priority band &mdash; the artefact a cleanup vessel is tasked from.
+            <b>The navigation track in this demo is synthetic and the product says so on
+            screen:</b> the geolocation path works end to end; the fix is not validated.</div>
+          <div class="note" style="margin-top:9px;padding:7px 12px;font-size:12.5px;">
+            <b>What we deliberately do not claim.</b> No "% of analyst time saved" appears
+            on this slide &mdash; that needs a user study we have not run.
+          </div>
+          <div style="margin-top:auto;padding-top:11px;display:grid;
+                      grid-template-columns:repeat(3,1fr);gap:9px;">
+            <div class="box teal t-teal" style="padding:9px 11px;text-align:center;">
+              <div style="font-size:24px;font-weight:800;color:var(--teal);line-height:1;">&minus;32%</div>
+              <div style="font-size:11px;color:var(--ink-2);margin-top:5px;line-height:1.28;">
+                falsely-alarmed frames<br><span style="color:var(--ink-3);">measured</span></div>
+            </div>
+            <div class="box teal t-teal" style="padding:9px 11px;text-align:center;">
+              <div style="font-size:24px;font-weight:800;color:var(--teal);line-height:1;">19/21</div>
+              <div style="font-size:11px;color:var(--ink-2);margin-top:5px;line-height:1.28;">
+                true positives kept<br><span style="color:var(--ink-3);">measured</span></div>
+            </div>
+            <div class="box teal t-teal" style="padding:9px 11px;text-align:center;">
+              <div style="font-size:24px;font-weight:800;color:var(--teal);line-height:1;">37.4/s</div>
+              <div style="font-size:11px;color:var(--ink-2);margin-top:5px;line-height:1.28;">
+                frames processed<br><span style="color:var(--ink-3);">measured</span></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -599,107 +596,112 @@ S5 = f"""
 # ============================================================== SLIDE 6 =====
 S6 = f"""
 <div class="slide">
-  {chrome(6, "Research &amp; References", "Prior art, method, and what we have not done",
-          "Judges trust a team that states its limits. The right-hand box is on the slide deliberately.")}
+  {chrome(6, "RESEARCH AND REFERENCES")}
   <div class="body">
-    <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:15px;height:100%;">
+    <div class="fill" style="display:grid;grid-template-columns:1fr 1.02fr;gap:14px;">
 
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <div class="card" style="flex:1;">
-          <div class="lbl">Prior art — and our relationship to it</div>
-          <table class="t">
-            <tr><th style="width:34%;">Work</th><th style="width:19%;">Licence</th><th>Relationship</th></tr>
-            <tr><td>GhostVision<br><span style="font-size:10px;color:var(--txt-3);">JMSE 14(10):951, 2025</span></td>
+      <div style="display:flex;flex-direction:column;gap:11px;">
+        <div class="box">
+          <h3 class="sec">Datasets &amp; prior art &mdash; every licence verified</h3>
+          <table class="t" style="font-size:12px;">
+            <tr><th style="width:35%;">Work</th><th style="width:20%;">Licence</th><th>Relationship</th></tr>
+            <tr><td><b>MILCO / NOMBO</b><br><span style="font-size:10px;color:var(--ink-3);">Data in Brief 53:110132 &middot;<br>DOI 10.6084/m9.figshare.24574879</span></td>
+                <td style="color:var(--green);font-weight:700;">CC BY 4.0</td>
+                <td class="dim"><b>Our training data</b> &mdash; mine-like &amp; bottom objects.</td></tr>
+            <tr><td><b>sss-crab-pot-detection-ds</b><br><span style="font-size:10px;color:var(--ink-3);">PINGEcosystem &middot; HuggingFace</span></td>
+                <td style="color:var(--green);font-weight:700;">CC BY-SA 4.0</td>
+                <td class="dim"><b>Our training data</b> &mdash; derelict ghost gear.</td></tr>
+            <tr><td>GhostVision<br><span style="font-size:10px;color:var(--ink-3);">JMSE 14(10):951, 2025</span></td>
                 <td class="dim">NOASSERTION</td>
-                <td class="dim">Closest system. Not vendored — licence unresolved.</td></tr>
-            <tr><td>PINGMapper<br><span style="font-size:10px;color:var(--txt-3);">Earth &amp; Space Science, 2022</span></td>
+                <td class="dim">Closest prior system. Not vendored &mdash; licence unresolved.</td></tr>
+            <tr><td>PINGMapper<br><span style="font-size:10px;color:var(--ink-3);">Earth &amp; Space Science, 2022</span></td>
                 <td style="color:var(--green);">MIT</td>
                 <td class="dim">Pipeline shape and output conventions.</td></tr>
             <tr><td>sidescantools</td><td class="dim">GPL-3.0</td>
                 <td class="dim">Studied; not vendored.</td></tr>
-            <tr><td>AI4Shipwrecks<br><span style="font-size:10px;color:var(--txt-3);">arXiv 2401.14546</span></td>
+            <tr><td>AI4Shipwrecks<br><span style="font-size:10px;color:var(--ink-3);">arXiv 2401.14546</span></td>
                 <td style="color:var(--green);">MIT</td>
                 <td class="dim">Route to a wreck class later.</td></tr>
-            <tr><td>MILCO / NOMBO<br><span style="font-size:10px;color:var(--txt-3);">Data in Brief 53:110132</span></td>
-                <td style="color:var(--green);">CC BY 4.0</td>
-                <td class="dim"><b style="color:#fff;">Training data</b> — mine-like objects.</td></tr>
-            <tr><td>sss-crab-pot-detection-ds<br><span style="font-size:10px;color:var(--txt-3);">PINGEcosystem</span></td>
-                <td style="color:var(--green);">CC BY-SA 4.0</td>
-                <td class="dim"><b style="color:#fff;">Training data</b> — derelict ghost gear.</td></tr>
-            <tr><td>SSM-DETR · TR-YOLOv5s<br>MSF-DETR · LEF-RT-DETR
-                <br><span style="font-size:10px;color:var(--txt-3);">4 detection architectures reviewed</span></td>
-                <td class="dim">papers</td>
-                <td class="dim"><b style="color:var(--amber);">Evaluated, not adopted.</b>
-                    Each needs <b style="color:#fff;">2.6×–44× our compute</b> for
-                    single-digit AP gains, on datasets we cannot access or that are
-                    forward-looking sonar, not side-scan.</td></tr>
           </table>
-          <div class="callout" style="margin-top:14px;padding:10px 14px;font-size:12.5px;">
-            <b>Why we did not simply adopt a published architecture.</b> The published
-            gains are real — but they are measured on a different sonar modality, at a
-            compute budget that rules out edge deployment, on data we cannot obtain to
-            reproduce. Our bottleneck is false alarms on empty seabed, which a bigger
-            backbone does not fix.
-          </div>
         </div>
 
-        <div class="card" style="padding:14px 17px;">
-          <div class="lbl violet">Method references</div>
-          <div style="font-size:13px;color:var(--txt-2);line-height:1.65;">
-            <b style="color:#fff;">Lee (1980)</b> — adaptive speckle filtering,
-            DOI 10.1109/TPAMI.1980.4766994 &nbsp;·&nbsp;
-            <b style="color:#fff;">Platt (1999)</b> — probabilistic outputs for
-            large-margin classifiers, MIT Press &nbsp;·&nbsp;
-            <b style="color:#fff;">Guo et al. (2017)</b> — on calibration of modern
-            neural networks, arXiv:1706.04599 &nbsp;·&nbsp;
-            <b style="color:#fff;">Ultralytics YOLO11</b> — detection backbone.
+        <div class="box violet">
+          <h3 class="sec" style="color:var(--violet);">Method references</h3>
+          <ul class="b tight" style="font-size:12px;">
+            <li><b>Lee (1980)</b> &mdash; adaptive speckle filtering, DOI 10.1109/TPAMI.1980.4766994</li>
+            <li><b>Platt (1999)</b> &mdash; probabilistic outputs for large-margin classifiers, MIT Press</li>
+            <li><b>Guo et al. (2017)</b> &mdash; on calibration of modern neural networks, arXiv:1706.04599</li>
+            <li><b>Ultralytics YOLO11</b> &mdash; detection backbone (AGPL-3.0, interface-isolated)</li>
+          </ul>
+        </div>
+
+        <div class="box amber t-amber">
+          <h3 class="sec amber">Architectures reviewed and deliberately not adopted</h3>
+          <div style="font-size:12px;line-height:1.42;color:#5A3D00;">
+            <b>SSM-DETR &nbsp;&middot;&nbsp; TR-YOLOv5s &nbsp;&middot;&nbsp; MSF-DETR
+            &nbsp;&middot;&nbsp; LEF-RT-DETR.</b> Each needs
+            <b>2.6&times;&ndash;44&times; our compute</b> for single-digit AP gains,
+            measured on forward-looking sonar or on datasets we cannot obtain to reproduce.
+            Our bottleneck is false alarms on empty seabed &mdash; a bigger backbone does
+            not fix that.
           </div>
         </div>
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <div class="card" style="border-color:rgba(245,179,65,0.5);">
-          <div class="lbl amber">What we have NOT done — stated deliberately</div>
-          <ul class="tight">
-            <li class="amber">Ghost-gear detection has <b>one raw training result</b>
-                (mAP50 0.323). It has not been through the verification stage,
-                calibration, or an ablation.</li>
-            <li class="amber">Geolocation accuracy has <b>never been validated</b> —
-                the licensed data available to us ships no navigation track.</li>
-            <li class="amber">Detection <b>degrades under added speckle noise</b>
-                (measured). A noise-robust checkpoint exists but trades clean accuracy.</li>
-            <li class="amber">Never run on a <b>Jetson or a live AUV</b>.</li>
-            <li class="amber">Our own sonar preprocessing chain <b>did not help</b> when
-                measured properly, and ships disabled.</li>
-            <li class="amber">Detector backend is <b>AGPL-3.0</b>; the licence is
-                isolated behind an interface but not yet replaced.</li>
-          </ul>
-        </div>
-
-        <div class="card" style="flex:1;">
-          <div class="lbl green">Roadmap to the finals — how each gap closes</div>
-          <table class="t" style="font-size:12.5px;">
-            <tr><td style="width:26%;color:var(--cyan);font-weight:700;">1 · Verify</td>
-                <td class="dim">Fit the verification stage on the ghost-gear model and
-                    run the full ablation — turn one raw number into a pipeline result.</td></tr>
-            <tr><td style="color:var(--cyan);font-weight:700;">2 · Compare</td>
-                <td class="dim">Measure against detector-only, rule-filter and
-                    YOLO11s / RT-DETR at equal compute.</td></tr>
-            <tr><td style="color:var(--cyan);font-weight:700;">3 · Calibrate</td>
-                <td class="dim">Report reliability curve and ECE on the held-out split.</td></tr>
-            <tr><td style="color:var(--cyan);font-weight:700;">4 · Edge</td>
-                <td class="dim">Benchmark the ONNX export on Jetson-class hardware.</td></tr>
-            <tr><td style="color:var(--cyan);font-weight:700;">5 · Geolocate</td>
-                <td class="dim">Validate positional accuracy against a survey that
-                    actually ships a navigation track.</td></tr>
+      <div style="display:flex;flex-direction:column;gap:11px;">
+        <div class="box teal">
+          <h3 class="sec teal">How our approach compares</h3>
+          <table class="t" style="font-size:12px;">
+            <tr><th style="width:30%;">Capability</th>
+                <th class="c" style="width:19%;background:var(--tint-teal);color:var(--teal);">AQUA-SHIELD</th>
+                <th class="c" style="width:17%;">Manual analyst</th>
+                <th class="c" style="width:16%;">Generic YOLO</th>
+                <th class="c">Published SSS detectors</th></tr>
+            <tr><td>Detects bottom objects in SSS</td>
+                <td class="c"><span class="yes">&#10003;</span></td><td class="c"><span class="yes">&#10003;</span></td>
+                <td class="c"><span class="yes">&#10003;</span></td><td class="c"><span class="yes">&#10003;</span></td></tr>
+            <tr><td>Independent physical verification</td>
+                <td class="c"><span class="yes">&#10003;</span></td><td class="c"><span class="yes">&#10003;</span></td>
+                <td class="c"><span class="no">&#10007;</span></td><td class="c"><span class="no">&#10007;</span></td></tr>
+            <tr><td>Calibrated confidence</td>
+                <td class="c"><span class="yes">&#10003;</span></td><td class="c"><span class="no">&#10007;</span></td>
+                <td class="c"><span class="no">&#10007;</span></td><td class="c"><span class="part">rare</span></td></tr>
+            <tr><td>Refuses to invent a coordinate</td>
+                <td class="c"><span class="yes">&#10003;</span></td><td class="c"><span class="yes">&#10003;</span></td>
+                <td class="c"><span class="no">&#10007;</span></td><td class="c"><span class="no">&#10007;</span></td></tr>
+            <tr><td>Per-detection evidence &amp; audit trail</td>
+                <td class="c"><span class="yes">&#10003;</span></td><td class="c"><span class="part">informal</span></td>
+                <td class="c"><span class="no">&#10007;</span></td><td class="c"><span class="no">&#10007;</span></td></tr>
+            <tr><td>Runs offline on survey hardware</td>
+                <td class="c"><span class="yes">&#10003;</span></td><td class="c"><span class="yes">&#10003;</span></td>
+                <td class="c"><span class="yes">&#10003;</span></td><td class="c"><span class="part">varies</span></td></tr>
+            <tr><td>Scales to thousands of km</td>
+                <td class="c"><span class="yes">&#10003;</span></td><td class="c"><span class="no">&#10007;</span></td>
+                <td class="c"><span class="yes">&#10003;</span></td><td class="c"><span class="yes">&#10003;</span></td></tr>
           </table>
         </div>
 
-        <div class="callout cy" style="font-size:13px;">
-          <b>Everything above is reproducible.</b> Every figure in this deck traces to
-          <span class="mono">experiments/registry.jsonl</span>,
-          <span class="mono">docs/BENCHMARKS.md</span>, or a live run of the prototype
-          — regenerated by script, never typed in by hand.
+        <div class="box red" style="flex:1;">
+          <h3 class="sec red">What we have NOT done &mdash; stated deliberately</h3>
+          <ul class="b tight" style="font-size:12px;">
+            <li>Ghost-gear detection has <b>one raw training result</b> (mAP50 0.323). It
+                has not yet been through the verification stage, calibration, or an
+                ablation.</li>
+            <li>Geolocation accuracy has <b>never been validated</b> &mdash; the licensed
+                data available to us ships no navigation track.</li>
+            <li>Detection <b>degrades under added speckle noise</b> (measured).</li>
+            <li>Never run on a <b>Jetson or a live AUV</b>.</li>
+            <li>Our own sonar preprocessing chain <b>did not help</b> when measured
+                properly, and ships disabled by default.</li>
+          </ul>
+          <div style="font-size:12px;color:var(--ink-2);margin-top:8px;line-height:1.42;
+                      border-top:1px solid var(--rule);padding-top:8px;">
+            <b>Roadmap to the finals:</b> &nbsp;1 &middot; fit + ablate verification on the
+            ghost-gear model &nbsp;&middot; 2 &middot; run the baseline comparison
+            &nbsp;&middot; 3 &middot; report the reliability curve and ECE &nbsp;&middot;
+            4 &middot; benchmark the ONNX export on Jetson &nbsp;&middot; 5 &middot;
+            validate geolocation against a survey that ships a navigation track.
+          </div>
         </div>
       </div>
     </div>
@@ -711,7 +713,6 @@ SLIDES = [S1, S2, S3, S4, S5, S6]
 
 HTML = f"""<!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="{(DECK / 'slides.css').as_uri()}">
-<style>.mono{{font-family:var(--mono);}}</style>
 </head><body>{''.join(SLIDES)}</body></html>"""
 
 page_html = BUILD / "deck.html"
